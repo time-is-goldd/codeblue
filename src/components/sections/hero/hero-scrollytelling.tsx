@@ -23,8 +23,12 @@ const DIM_OPACITY = 0.2;
  * GSAP의 `pin: true`(Pinning)는 이번 단계에서 금지되어 있으므로 사용하지 않으며,
  * ScrollTrigger는 오직 스크롤 진행률을 읽어 타임라인을 scrub하는 용도로만 쓰인다.
  *
- * 3개 문장(H1 + 두 개의 `<p>`)은 같은 좌표에 절대 위치로 겹쳐 놓고 opacity/y만
- * 애니메이션한다 — 텍스트 위치가 흔들리지 않고 "읽기"에만 집중할 수 있다.
+ * 3개 문장은 각각 "절대 위치+중앙 정렬용 wrapper `<div>`" 안에 실제 텍스트(H1 + 두 개의
+ * `<p>`)를 담아 같은 좌표에 겹쳐 놓고, wrapper의 opacity/y만 애니메이션한다 — 텍스트 위치가
+ * 흔들리지 않고 "읽기"에만 집중할 수 있다. `flex`(절대 위치+중앙 정렬)는 반드시 텍스트가
+ * 없는 wrapper에만 걸어야 한다 — Heading 자신에게 걸면 `display:flex`가 텍스트/`<span>`
+ * 자식을 각각 별도 flex item으로 쪼개 모바일 좁은 폭에서 글자가 세로로 흩어지는
+ * 버그가 있었다(2026-07-25 실측 수정, 아래 JSX 주석 참고).
  *
  * `#about`(다음 섹션)의 문서상 위치가 이 섹션의 실제 높이(300vh)만큼 자동으로
  * 밀려나므로, Header/FloatingCTA의 Hero 경계 판정(LayoutScrollProvider)은
@@ -32,9 +36,11 @@ const DIM_OPACITY = 0.2;
  */
 export function HeroScrollytelling({ ctaPrimary, ctaSecondary, riskReversalItems }: HeroSectionProps) {
   const wrapperRef = useRef<HTMLElement>(null);
-  const sentence1Ref = useRef<HTMLElement>(null);
-  const sentence2Ref = useRef<HTMLElement>(null);
-  const sentence3Ref = useRef<HTMLElement>(null);
+  // 모바일 레이아웃 버그 수정(2026-07-25)으로 각 ref가 이제 Heading이 아니라 그걸 감싸는
+  // <div> wrapper를 가리킨다 — 타입도 함께 HTMLDivElement로 맞춘다.
+  const sentence1Ref = useRef<HTMLDivElement>(null);
+  const sentence2Ref = useRef<HTMLDivElement>(null);
+  const sentence3Ref = useRef<HTMLDivElement>(null);
   const indicatorRef = useRef<HTMLDivElement>(null);
   const glowRef = useRef<HTMLDivElement>(null);
 
@@ -117,41 +123,50 @@ export function HeroScrollytelling({ ctaPrimary, ctaSecondary, riskReversalItems
               리스크 리버설 캡션)이 추가되면서, 이 컨테이너는 `overflow-hidden`인 h-screen sticky
               박스 안에 있어 세로 여백을 아낄수록 저사양/짧은 뷰포트에서 잘림 위험이 줄어든다. */}
           <Container className="relative flex flex-col items-center gap-8 text-center sm:gap-10">
-            {/* 3문장이 같은 자리에 겹쳐 표시되는 스테이지 — 높이를 고정해 레이아웃이 흔들리지 않는다 */}
+            {/* 3문장이 같은 자리에 겹쳐 표시되는 스테이지 — 높이를 고정해 레이아웃이 흔들리지 않는다.
+                모바일 레이아웃 버그 수정(2026-07-25): 예전에는 `flex items-center justify-center`를
+                Heading(텍스트를 직접 담는 요소) 자신에게 걸었다 — `display:flex`가 걸린 요소의
+                "텍스트 노드 + <span>이 섞인 자식"은 CSS상 각각 독립된 익명 flex item으로
+                쪼개진다(스펙: 연속된 텍스트 런마다, 그리고 각 엘리먼트마다 별도 flex item 생성).
+                데스크톱처럼 폭이 넉넉하면 세 조각이 shrink 없이 한 줄에 나란히 앉아 정상처럼
+                보이지만, 모바일 폭에서는 각 조각이 강제로 줄어들며 "단/순/히"처럼 각자 따로
+                줄바꿈되어 실측 스크린샷과 동일하게 글자가 세로로 흩어졌다. 고정 폭에서만
+                재현되고 폰트 크기와는 무관한 문제라 font-size를 줄이는 방식으로는 해결되지
+                않는다 — 대신 `flex`(절대 위치+중앙 정렬)를 텍스트가 없는 별도 wrapper로
+                옮기고, 실제 텍스트는 flex가 걸리지 않은 일반 블록 요소(Heading) 하나로만
+                감싸 정상적인 단락 줄바꿈(그리고 text-balance)이 적용되게 했다. */}
             <div className="relative min-h-[2.6em] w-full">
-              <Heading
-                ref={sentence1Ref}
-                size="display"
-                className="absolute inset-0 flex items-center justify-center text-balance"
-              >
-                단순히{" "}
-                <span className="text-brand-accent whitespace-nowrap">&apos;예쁜&apos;</span> 홈페이지
-                제작을 찾으시나요?
-              </Heading>
+              <div ref={sentence1Ref} className="absolute inset-0 flex items-center justify-center">
+                <Heading size="display" className="text-center text-balance">
+                  단순히{" "}
+                  <span className="text-brand-accent whitespace-nowrap">&apos;예쁜&apos;</span> 홈페이지
+                  제작을 찾으시나요?
+                </Heading>
+              </div>
 
-              <Heading
+              {/* opacity-0: 서버 렌더 HTML 자체에 이미 숨김 상태를 포함시켜, 하이드레이션 전
+                  (JS가 아직 gsap.set()을 실행하기 전) 잠깐이라도 문장 1과 겹쳐 보이지 않게 한다. */}
+              <div
                 ref={sentence2Ref}
-                as="p"
-                size="display"
-                // opacity-0: 서버 렌더 HTML 자체에 이미 숨김 상태를 포함시켜, 하이드레이션 전
-                // (JS가 아직 gsap.set()을 실행하기 전) 잠깐이라도 문장 1과 겹쳐 보이지 않게 한다.
-                className="absolute inset-0 flex items-center justify-center text-balance opacity-0"
+                className="absolute inset-0 flex items-center justify-center opacity-0"
               >
-                그렇다면 죄송하지만,
-                <br />
-                다른 홈페이지 제작 업체를 추천드립니다.
-              </Heading>
+                <Heading as="p" size="display" className="text-center text-balance">
+                  그렇다면 죄송하지만,
+                  <br />
+                  다른 홈페이지 제작 업체를 추천드립니다.
+                </Heading>
+              </div>
 
-              <Heading
+              <div
                 ref={sentence3Ref}
-                as="p"
-                size="display"
-                className="absolute inset-0 flex items-center justify-center text-balance opacity-0"
+                className="absolute inset-0 flex items-center justify-center opacity-0"
               >
-                예쁘기만 한 홈페이지는
-                <br />
-                매출을 만들지 않기 때문입니다.
-              </Heading>
+                <Heading as="p" size="display" className="text-center text-balance">
+                  예쁘기만 한 홈페이지는
+                  <br />
+                  매출을 만들지 않기 때문입니다.
+                </Heading>
+              </div>
             </div>
 
             <HeroModelPlaceholder />

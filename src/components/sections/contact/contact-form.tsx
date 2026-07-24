@@ -174,8 +174,25 @@ export function ContactForm({ onSubmitAction }: ContactFormProps) {
       // 성공 메시지를 먼저 보여준 뒤 폼을 비운다 — 두 상태를 같은 커밋에서 갱신해도
       // React가 한 번에 반영하므로 사용자에게는 "성공 메시지 표시 + 빈 폼"이 동시에
       // 보인다. 실패 시에는 이 reset()을 호출하지 않아 입력값이 그대로 남는다.
+      //
+      // `{ keepFieldsRef: true }`(실측으로 찾은 근본 원인 대응, 2026-07-25): 이 옵션이
+      // 없으면 react-hook-form의 reset()이 내부 필드 레지스트리(각 input의 DOM ref를
+      // 담은 캐시)를 통째로 비우고, 다음 렌더에서 각 input의 `ref` 콜백이 "다시 호출"되어
+      // 레지스트리가 재구성되기를 기대한다 — 순수 `<input ref={register().ref}>`라면
+      // `register()`가 렌더마다 새 함수를 반환하므로 React가 ref를 재부착하며 이 재구성이
+      // 저절로 일어난다. 하지만 이 폼의 입력 필드는 Hover 애니메이션을 위해
+      // `motion.create(Input)`(MotionInput)으로 감싸여 있는데, Framer Motion은 내부적으로
+      // 이 ref 콜백을 `useCallback(..., [visualElement])`로 메모이즈해 렌더마다 재부착하지
+      // 않는다(AnimatePresence 등이 깨지는 걸 막기 위한 Framer Motion의 의도된 동작 —
+      // node_modules/framer-motion/dist/es/motion/utils/use-motion-ref.mjs 참고). 그 결과
+      // reset()이 필드 레지스트리를 비운 뒤로는 아무도 다시 채워주지 않아, RHF의 값
+      // 상태(getValues())는 정확히 ""로 바뀌는데(그래서 검증·재제출은 멀쩡히 동작한다)
+      // 실제 DOM input의 값은 예전 텍스트에 그대로 남는다 — 정확히 보고된 증상이다.
+      // `keepFieldsRef: true`는 레지스트리를 비우지 않고 이미 갖고 있는 올바른 ref에
+      // 직접 값을 다시 써넣도록 지시해 이 문제를 근본적으로 피한다(jsdom+실제 DOM으로
+      // 재현·검증 완료 — 원인 규명 과정은 대화 응답 참고).
       setSubmitSuccess(true);
-      reset(DEFAULT_VALUES);
+      reset(DEFAULT_VALUES, { keepFieldsRef: true });
     } else {
       setSubmitError(result.error ?? "문의 접수 중 문제가 발생했습니다. 잠시 후 다시 시도해주세요.");
     }
