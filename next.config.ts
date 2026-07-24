@@ -11,6 +11,17 @@ import type { NextConfig } from "next";
  * 실패로 실측). 전체 `eval()`/`new Function()` 문자열 실행을 허용하는(훨씬 위험한)
  * `unsafe-eval` 대신, WebAssembly 컴파일만 허용하는 좁은 범위의 `wasm-unsafe-eval`을
  * 추가해 보안 범위를 넓히지 않고 문제만 해결한다.
+ *
+ * GA4/Microsoft Clarity(2026-07-25): 두 스크립트를 도입하며 이 CSP를 갱신하지 않으면
+ * `connect-src`/`script-src`가 `'self'`만 허용해 두 도메인 모두 브라우저가 자체적으로
+ * 차단한다(콘솔에 CSP 위반 에러만 남고 스크립트는 조용히 실패) — 실제로 GA4를 먼저
+ * 추가했을 때 이 갱신을 누락해 발생한 문제라, 이번에 함께 고친다.
+ * - `script-src`: `www.googletagmanager.com`(gtag.js 로드), `www.clarity.ms`(Clarity
+ *   태그 스크립트 로드)만 추가한다.
+ * - `connect-src`: 실제 이벤트/세션 데이터 전송 목적지만 추가한다 — GA4는
+ *   `www.google-analytics.com`(리전별 서브도메인 포함), Clarity는 `www.clarity.ms`와
+ *   데이터 수집에 쓰는 서브도메인들(`*.clarity.ms`, 예: c.clarity.ms) — 둘 다
+ *   Microsoft/Google 공식 문서가 권장하는 최소 목록이다.
  */
 const securityHeaders = [
   {
@@ -29,11 +40,11 @@ const securityHeaders = [
     key: "Content-Security-Policy",
     value: [
       "default-src 'self'",
-      "script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval'",
+      "script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval' https://www.googletagmanager.com https://www.clarity.ms",
       "style-src 'self' 'unsafe-inline'",
       "img-src 'self' data: blob:",
       "font-src 'self' data:",
-      "connect-src 'self'",
+      "connect-src 'self' https://www.google-analytics.com https://*.google-analytics.com https://www.googletagmanager.com https://www.clarity.ms https://*.clarity.ms",
     ].join("; "),
   },
 ];

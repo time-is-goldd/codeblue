@@ -4,6 +4,7 @@ import { defaultMetadata } from "@/lib/seo/metadata";
 import { organizationJsonLd, websiteJsonLd } from "@/lib/seo/jsonld";
 import { JsonLd } from "@/components/seo/json-ld";
 import { GoogleAnalytics } from "@/components/analytics/google-analytics";
+import { MicrosoftClarity } from "@/components/analytics/microsoft-clarity";
 import { AppProviders } from "@/components/providers";
 import "./globals.css";
 
@@ -62,6 +63,7 @@ export default async function RootLayout({
         <JsonLd data={organization} />
         <JsonLd data={websiteJsonLd()} />
         <GoogleAnalytics />
+        <MicrosoftClarity />
         <AppProviders>{children}</AppProviders>
       </body>
     </html>

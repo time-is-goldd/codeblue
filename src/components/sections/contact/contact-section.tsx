@@ -3,7 +3,7 @@
 import { useLayoutEffect, useRef } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { Mail, MessageCircle, Clock } from "lucide-react";
+import { Mail, MessageCircle, Clock, Phone } from "lucide-react";
 import { Section } from "@/components/common/section";
 import { Container } from "@/components/common/container";
 import { SectionHeading } from "@/components/common/section-heading";
@@ -15,6 +15,7 @@ import { ContactScheduleNotice } from "./contact-schedule-notice";
 import { ContactForm } from "./contact-form";
 import { submitContactAction } from "@/lib/actions/contact.actions";
 import { useReducedMotion } from "@/hooks/use-reduced-motion";
+import { trackEvent } from "@/lib/analytics";
 import type { ContactInfo } from "@/types";
 
 export interface ContactSectionProps {
@@ -129,16 +130,31 @@ export function ContactSection({ contactInfo }: ContactSectionProps) {
                 <div className="flex flex-col gap-1.5">
                   <a
                     href={`mailto:${contactInfo.email}`}
+                    onClick={() => trackEvent("email_click", { location: "contact_section" })}
                     className="inline-flex items-center gap-2 text-body-sm text-brand-text-secondary hover:text-brand-accent"
                   >
                     <Mail aria-hidden className="size-icon-sm" />
                     {contactInfo.email}
                   </a>
+                  {/* phone은 값이 있을 때만 노출된다(ContactInfo.phone 옵션 필드 — 현재는
+                      개인 번호뿐이라 비공개 상태). 값이 채워지는 즉시 이 링크와
+                      phone_click 트래킹이 코드 수정 없이 함께 활성화된다. */}
+                  {contactInfo.phone && (
+                    <a
+                      href={`tel:${contactInfo.phone}`}
+                      onClick={() => trackEvent("phone_click", { location: "contact_section" })}
+                      className="inline-flex items-center gap-2 text-body-sm text-brand-text-secondary hover:text-brand-accent"
+                    >
+                      <Phone aria-hidden className="size-icon-sm" />
+                      {contactInfo.phone}
+                    </a>
+                  )}
                   {contactInfo.kakaoChannelUrl && (
                     <a
                       href={contactInfo.kakaoChannelUrl}
                       target="_blank"
                       rel="noopener noreferrer"
+                      onClick={() => trackEvent("kakao_click", { location: "contact_section_link" })}
                       className="inline-flex items-center gap-2 text-body-sm text-brand-text-secondary hover:text-brand-accent"
                     >
                       <MessageCircle aria-hidden className="size-icon-sm" />
@@ -163,7 +179,12 @@ export function ContactSection({ contactInfo }: ContactSectionProps) {
                   </Text>
                   <Button
                     render={
-                      <a href={contactInfo.kakaoChannelUrl} target="_blank" rel="noopener noreferrer" />
+                      <a
+                        href={contactInfo.kakaoChannelUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onClick={() => trackEvent("kakao_click", { location: "contact_section_button" })}
+                      />
                     }
                     variant="cta"
                     size="default"

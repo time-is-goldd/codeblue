@@ -7,6 +7,7 @@ import { useLenis } from "@/components/providers/lenis-provider";
 import { useReducedMotion } from "@/hooks/use-reduced-motion";
 import { HEADER_HEIGHT } from "@/lib/constants/layout";
 import { KAKAO_CHANNEL_URL } from "@/lib/constants/kakao";
+import { trackEvent } from "@/lib/analytics";
 import { useLayoutScroll } from "./layout-scroll-provider";
 
 const CONTACT_SECTION_ID = "contact";
@@ -71,7 +72,14 @@ export function FloatingCta() {
             문의 남기기
           </Button>
           <Button
-            render={<a href={KAKAO_CHANNEL_URL} target="_blank" rel="noopener noreferrer" />}
+            render={
+              <a
+                href={KAKAO_CHANNEL_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={() => trackEvent("kakao_click", { location: "floating_cta" })}
+              />
+            }
             variant="cta"
             size="default"
             aria-label="무료로 카카오톡 상담하기(새 탭)"

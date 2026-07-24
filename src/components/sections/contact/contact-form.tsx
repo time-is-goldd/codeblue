@@ -18,6 +18,7 @@ import { SuccessMessage } from "@/components/ui/success-message";
 import { contactFormSchema, type ContactFormValues } from "@/lib/validations/contact.schema";
 import type { SubmitContactActionResult } from "@/lib/actions/contact.actions";
 import { useReducedMotion } from "@/hooks/use-reduced-motion";
+import { trackEvent } from "@/lib/analytics";
 
 export interface ContactFormProps {
   /** Server Action — COMPONENT_GUIDE.md 5.8. 이 컴포넌트는 어떻게 저장/전송되는지 모른다. */
@@ -193,6 +194,7 @@ export function ContactForm({ onSubmitAction }: ContactFormProps) {
       // 재현·검증 완료 — 원인 규명 과정은 대화 응답 참고).
       setSubmitSuccess(true);
       reset(DEFAULT_VALUES, { keepFieldsRef: true });
+      trackEvent("contact_submit", { form_location: "contact_section" });
     } else {
       setSubmitError(result.error ?? "문의 접수 중 문제가 발생했습니다. 잠시 후 다시 시도해주세요.");
     }
