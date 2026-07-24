@@ -3,6 +3,7 @@ import localFont from "next/font/local";
 import { defaultMetadata } from "@/lib/seo/metadata";
 import { organizationJsonLd, websiteJsonLd } from "@/lib/seo/jsonld";
 import { JsonLd } from "@/components/seo/json-ld";
+import { GoogleAnalytics } from "@/components/analytics/google-analytics";
 import { AppProviders } from "@/components/providers";
 import "./globals.css";
 
@@ -60,6 +61,7 @@ export default async function RootLayout({
       <body className="min-h-full antialiased">
         <JsonLd data={organization} />
         <JsonLd data={websiteJsonLd()} />
+        <GoogleAnalytics />
         <AppProviders>{children}</AppProviders>
       </body>
     </html>
