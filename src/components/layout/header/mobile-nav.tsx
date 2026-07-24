@@ -34,7 +34,9 @@ export function MobileNav({ activeId, cta }: MobileNavProps) {
         side="right"
         title="메뉴"
         trigger={
-          <Button variant="ghost" size="icon-sm" aria-label="메뉴 열기">
+          // 모바일 반응형 QA(2026-07-25): 이 버튼은 모바일에서 가장 많이 탭되는 인터랙션인데
+          // icon-sm(36px)은 Apple(44pt)/Android(48dp) 최소 터치 타깃 권장치보다 작았다.
+          <Button variant="ghost" size="icon" aria-label="메뉴 열기">
             <MenuIcon aria-hidden />
           </Button>
         }

@@ -48,7 +48,11 @@ export function Header({ cta }: HeaderProps) {
         ease: [0.16, 1, 0.3, 1],
       }}
       className={cn(
-        "fixed inset-x-0 top-0 z-sticky-header border-b transition-[background-color,backdrop-filter,border-color,box-shadow] duration-base ease-out-expo",
+        // 모바일 반응형 QA(2026-07-25): 노치/Dynamic Island 기기(특히 홈 화면에 추가한
+        // PWA의 black-translucent 상태 바 모드)에서 로고/메뉴가 상태 바 아래 가려지지
+        // 않도록 안전 영역만큼 위쪽 여백을 더한다. 일반 브라우저·비노치 기기에서는
+        // env() 값이 0이라 기존과 동일하게 렌더링된다.
+        "fixed inset-x-0 top-0 z-sticky-header border-b pt-[env(safe-area-inset-top)] transition-[background-color,backdrop-filter,border-color,box-shadow] duration-base ease-out-expo",
         isInHeroZone
           ? "border-transparent bg-transparent shadow-none"
           : "border-brand-border-subtle bg-brand-bg-elevated/70 shadow-md backdrop-blur-md supports-backdrop-filter:bg-brand-bg-elevated/50",

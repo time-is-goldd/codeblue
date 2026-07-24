@@ -30,6 +30,14 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   themeColor: "#08090b",
+  /**
+   * 모바일 반응형 QA(2026-07-25): `viewport-fit=cover`가 없으면 iOS Safari가
+   * `env(safe-area-inset-*)`를 전부 0으로 취급한다 — 노치/Dynamic Island를 가진
+   * 기기에서 고정 배치된 Header/FloatingCTA에 안전 영역 패딩을 주려면 반드시 필요하다.
+   * PWA(홈 화면 추가, `appleWebApp.statusBarStyle: "black-translucent"`)에서는 상태 바
+   * 영역까지 컨텐츠가 확장되므로 특히 중요하다.
+   */
+  viewportFit: "cover",
 };
 
 /**

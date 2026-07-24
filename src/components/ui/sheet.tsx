@@ -63,10 +63,12 @@ function SheetContent({
           <SheetPrimitive.Close
             data-slot="sheet-close"
             render={
+              // 모바일 반응형 QA(2026-07-25): 모바일 내비게이션 Drawer가 이 컴포넌트를
+              // 쓰므로 모바일에서 실제로 탭되는 버튼이다 — icon(44px)로 확대.
               <Button
                 variant="ghost"
                 className="absolute top-3 right-3"
-                size="icon-sm"
+                size="icon"
               />
             }
           >

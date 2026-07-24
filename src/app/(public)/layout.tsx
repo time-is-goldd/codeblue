@@ -22,7 +22,11 @@ export default async function PublicLayout({ children }: { children: React.React
       <SkipLink />
       <ScrollProgressBar />
       <Header cta={headerCta} />
-      <main id="main-content" style={{ paddingTop: HEADER_HEIGHT }}>
+      {/* 모바일 반응형 QA(2026-07-25): Header가 노치 기기에서 `env(safe-area-inset-top)`만큼
+          더 커지므로(header.tsx), 그만큼을 여기서도 함께 더해야 본문 상단이 Header에
+          가려지지 않는다. 비노치 기기에서는 env() 값이 0이라 기존과 동일하게 HEADER_HEIGHT만
+          적용된다. */}
+      <main id="main-content" style={{ paddingTop: `calc(${HEADER_HEIGHT}px + env(safe-area-inset-top))` }}>
         {children}
       </main>
       <Footer />

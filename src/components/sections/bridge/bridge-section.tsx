@@ -97,7 +97,7 @@ export function BridgeSection({ metrics }: BridgeSectionProps) {
     <section
       id="bridge"
       aria-label="Bridge"
-      className="relative flex min-h-screen flex-col items-center justify-center gap-16 bg-brand-bg-elevated px-4 py-16 md:py-24 lg:py-32"
+      className="relative flex min-h-screen-safe flex-col items-center justify-center gap-16 bg-brand-bg-elevated px-4 py-16 md:py-24 lg:py-32"
     >
       <Container size="narrow" className="flex flex-col items-center gap-10 text-center sm:gap-12">
         <Heading ref={mainRef} as="h2" size="display" className="text-balance">

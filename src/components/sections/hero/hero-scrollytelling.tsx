@@ -90,8 +90,8 @@ export function HeroScrollytelling({ ctaPrimary, ctaSecondary, riskReversalItems
   }, []);
 
   return (
-    <section id="hero" aria-label="Hero" ref={wrapperRef} className="relative h-[300vh]">
-      <div className="sticky top-0 flex h-screen flex-col items-center justify-center overflow-hidden bg-background px-4">
+    <section id="hero" aria-label="Hero" ref={wrapperRef} className="relative h-scroll-runway-safe">
+      <div className="sticky top-0 flex h-screen-safe flex-col items-center justify-center overflow-hidden bg-background px-4">
         <div
           ref={glowRef}
           aria-hidden="true"

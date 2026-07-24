@@ -43,4 +43,41 @@
   .skip-link:focus {
     @apply not-sr-only fixed left-4 top-4 z-tooltip rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground;
   }
+
+  /* 모바일 반응형 QA(2026-07-25) — iOS Safari는 `100vh`를 주소창이 숨겨졌을 때 기준
+     "가장 큰 뷰포트"로 계산해, 주소창이 보이는 일반 상태에서는 실제 화면보다 커진다
+     (Hero CTA가 화면 아래로 밀려 첫 화면에서 안 보이는 문제를 실측으로 재현). `dvh`는
+     주소창 표시 여부에 따라 실시간으로 갱신되는 값이라 이 문제를 근본적으로 해결하지만,
+     구형 브라우저는 `100dvh`를 이해하지 못하면 그 선언 자체를 무시한다.
+     ⚠ 처음에는 같은 속성을 두 번 선언하는(`height: 100vh; height: 100dvh;`) 표준 CSS
+     폴백 패턴을 썼으나, 빌드 후 컴파일된 CSS를 직접 확인해보니 Tailwind v4의 CSS
+     압축기가 "같은 규칙 안의 중복 선언"으로 판단해 첫 번째 줄(vh)을 조용히 제거해버렸다
+     — 즉 폴백이 실제로는 전혀 동작하지 않았다. `@supports` 기능 쿼리로 두 규칙을
+     물리적으로 분리하면 압축기가 규칙 경계를 넘어 병합하지 않으므로 폴백이 살아남는다. */
+  .h-screen-safe {
+    height: 100vh;
+  }
+
+  .min-h-screen-safe {
+    min-height: 100vh;
+  }
+
+  /* HeroScrollytelling의 스크롤 여유 구간(300vh) 전용 — 값만 다를 뿐 위와 동일한 폴백 원칙. */
+  .h-scroll-runway-safe {
+    height: 300vh;
+  }
+
+  @supports (height: 100dvh) {
+    .h-screen-safe {
+      height: 100dvh;
+    }
+
+    .min-h-screen-safe {
+      min-height: 100dvh;
+    }
+
+    .h-scroll-runway-safe {
+      height: 300dvh;
+    }
+  }
 }

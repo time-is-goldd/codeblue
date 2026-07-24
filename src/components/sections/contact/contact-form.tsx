@@ -155,18 +155,41 @@ export function ContactForm({ onSubmitAction }: ContactFormProps) {
     return () => ctx.revert();
   }, [prefersReducedMotion]);
 
-  const onSubmit = handleSubmit(async (values) => {
+  // react-hook-form의 `isSubmitting`은 리렌더를 거쳐야 버튼 `disabled`에 반영되므로,
+  // 그 사이(수 ms) 두 번째 제출 이벤트(빠른 연속 탭, 필드에서 Enter+버튼 클릭 동시 등)가
+  // 끼어들 수 있는 경합 구간이 있다. 이 ref는 렌더와 무관하게 동기적으로 막아
+  // "제출 중 버튼 비활성화"를 시각적 상태가 아니라 실제 보장으로 만든다.
+  //
+  // ref 읽기/쓰기는 `handleSubmit(...)`에 넘기는 콜백 밖(= 실제 이벤트 핸들러인 `onSubmit`
+  // 자체) 에서만 한다 — `handleSubmit(cb)` 호출 자체는 렌더 중에 일어나므로, `cb` 내부에서
+  // ref.current를 건드리면 "렌더 중 ref 접근"으로 오인되어 린트(react-hooks/refs)가 막는다.
+  const isSubmittingRef = useRef(false);
+
+  const submitForm = handleSubmit(async (values) => {
     setSubmitError(null);
     setSubmitSuccess(false);
 
     const result = await onSubmitAction(values);
     if (result.success) {
+      // 성공 메시지를 먼저 보여준 뒤 폼을 비운다 — 두 상태를 같은 커밋에서 갱신해도
+      // React가 한 번에 반영하므로 사용자에게는 "성공 메시지 표시 + 빈 폼"이 동시에
+      // 보인다. 실패 시에는 이 reset()을 호출하지 않아 입력값이 그대로 남는다.
       setSubmitSuccess(true);
       reset(DEFAULT_VALUES);
     } else {
       setSubmitError(result.error ?? "문의 접수 중 문제가 발생했습니다. 잠시 후 다시 시도해주세요.");
     }
   });
+
+  async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
+    if (isSubmittingRef.current) return;
+    isSubmittingRef.current = true;
+    try {
+      await submitForm(event);
+    } finally {
+      isSubmittingRef.current = false;
+    }
+  }
 
   const fieldHover = (hasError: boolean) =>
     prefersReducedMotion || hasError ? undefined : FIELD_HOVER_STYLE;

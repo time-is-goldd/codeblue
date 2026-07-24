@@ -80,7 +80,10 @@ export function PricingCard({ tier, index }: PricingCardProps) {
         transition={CARD_HOVER_TRANSITION}
         className={cn(
           GLASS_CARD_CLASS,
-          "flex h-full flex-col gap-4 rounded-lg p-8",
+          // 모바일 반응형 QA(2026-07-25): 다른 카드형 섹션(Service/Review/Portfolio)은 전부
+          // p-6(모바일)/p-8(lg~) 패턴인데 이 카드만 p-8 고정이었다 — 카드 간 여백 규칙을
+          // 통일하고, 좁은 화면에서 텍스트가 쓸 수 있는 폭도 함께 넓힌다.
+          "flex h-full flex-col gap-4 rounded-lg p-6 lg:p-8",
           isFeatured && "border-white/20 md:scale-[1.02]",
         )}
       >

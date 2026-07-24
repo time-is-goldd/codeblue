@@ -16,7 +16,7 @@ export function HeroStatic({ ctaPrimary, ctaSecondary, riskReversalItems }: Hero
     <section
       id="hero"
       aria-label="Hero"
-      className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden bg-background px-4 py-24"
+      className="relative flex min-h-screen-safe flex-col items-center justify-center overflow-hidden bg-background px-4 py-24"
     >
       <div
         aria-hidden="true"

@@ -54,14 +54,18 @@ export function FloatingCta() {
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: prefersReducedMotion ? 0 : 16 }}
           transition={{ duration: prefersReducedMotion ? 0 : 0.25, ease: [0.16, 1, 0.3, 1] }}
-          className="fixed right-4 bottom-4 z-floating-cta flex flex-col items-end gap-2.5 md:right-6 md:bottom-6"
+          className="fixed right-4 z-floating-cta flex flex-col items-end gap-2.5 bottom-[calc(1rem+env(safe-area-inset-bottom))] md:right-6 md:bottom-6"
         >
           <Button
             variant="secondary"
-            size="lg"
+            size="default"
             onClick={handleContactClick}
             aria-label="Contact 섹션으로 이동"
-            className="bg-brand-bg-elevated/90 shadow-lg backdrop-blur-md transition-transform duration-fast ease-out-expo hover:-translate-y-0.5"
+            // 모바일 반응형 QA(2026-07-25): "무료로 카카오톡 상담하기"(11자)가 lg 크기
+            // 그대로면 320px 폭 화면에서 좌우 여백이 10px 미만까지 좁아진다(실측 계산
+            // 기준) — 두 버튼 모두 모바일에서는 default 크기로 줄이고, 화면이 넓어지는
+            // md 이상에서만 원래의 lg 크기로 되돌린다.
+            className="bg-brand-bg-elevated/90 shadow-lg backdrop-blur-md transition-transform duration-fast ease-out-expo hover:-translate-y-0.5 md:h-[52px] md:gap-2 md:px-7 md:text-body-lg"
           >
             <MailIcon aria-hidden />
             문의 남기기
@@ -69,9 +73,9 @@ export function FloatingCta() {
           <Button
             render={<a href={KAKAO_CHANNEL_URL} target="_blank" rel="noopener noreferrer" />}
             variant="cta"
-            size="lg"
+            size="default"
             aria-label="무료로 카카오톡 상담하기(새 탭)"
-            className="shadow-lg transition-transform duration-fast ease-out-expo hover:-translate-y-0.5"
+            className="shadow-lg transition-transform duration-fast ease-out-expo hover:-translate-y-0.5 md:h-[52px] md:gap-2 md:px-7 md:text-body-lg"
           >
             <MessageCircleIcon aria-hidden />
             무료로 카카오톡 상담하기

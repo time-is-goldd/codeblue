@@ -63,10 +63,12 @@ function DialogContent({
           <DialogPrimitive.Close
             data-slot="dialog-close"
             render={
+              // 모바일 반응형 QA(2026-07-25): ImageLightbox(Difference 섹션 이미지 확대)가
+              // 이 컴포넌트를 쓰므로 모바일에서 실제로 탭되는 버튼이다 — icon(44px)로 확대.
               <Button
                 variant="ghost"
                 className="absolute top-2 right-2"
-                size="icon-sm"
+                size="icon"
               />
             }
           >
