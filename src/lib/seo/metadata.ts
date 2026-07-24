@@ -84,11 +84,15 @@ export const defaultMetadata: Metadata = {
     },
   },
   /**
-   * Google Search Console 소유권 확인(2026-07-25). Next.js의 `verification.google`이
-   * `<meta name="google-site-verification" content="...">`를 자동으로 렌더링한다 —
-   * 전역 메타데이터라 모든 라우트에 공통 적용된다.
+   * 검색엔진 소유권 확인(2026-07-25). Next.js의 `verification.google`/`verification.other`가
+   * 각각 `<meta name="google-site-verification">`/`<meta name="...">`를 자동으로
+   * 렌더링한다 — 전역 메타데이터라 모든 라우트에 공통 적용된다. 네이버는 Next.js에
+   * 이름이 지정된 필드가 없어 `other`로 넣는다(키가 곧 meta `name` 속성이 된다).
    */
   verification: {
     google: "44iKP58RedorPUx3ph_6Hg09kBTowrB8z2WSZc4xNp4",
+    other: {
+      "naver-site-verification": "34e8168793d90bda4665fc2e8de08a150ee83149",
+    },
   },
 };
