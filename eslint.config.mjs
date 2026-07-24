@@ -12,6 +12,8 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // 일회성 Node 개발 도구 스크립트 — 앱 소스가 아니므로 앱 lint 규칙 대상에서 제외
+    "scripts/**",
   ]),
 ]);
 

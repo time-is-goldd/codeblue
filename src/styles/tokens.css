@@ -1,0 +1,235 @@
+/**
+ * CodeBlue Design Tokens — DESIGN_SYSTEM.md 단일 진실 공급원(17장).
+ *
+ * 이 파일이 모든 색상/간격/타이포/Z-index/모션 토큰의 유일한 정의처다.
+ * tailwind.config는 별도로 두지 않고(Tailwind v4), 아래 `@theme inline` 블록이
+ * 이 CSS 변수를 Tailwind 유틸리티(bg-*, text-*, shadow-*, z-*, duration-* 등)로 노출한다.
+ * 신규 토큰은 반드시 이 파일에서 먼저 추가한다 (역순 금지).
+ */
+
+:root {
+  /* ── 1. 베이스 팔레트 (다크 테마 전용 — DESIGN_SYSTEM.md 2.1) ───────────── */
+  --color-bg-base: #08090b;
+  --color-bg-elevated: #101214;
+  --color-bg-elevated-2: #16181b;
+  --color-border-subtle: #22252a;
+  --color-border-strong: #33373d;
+  --color-text-primary: #f5f6f7;
+  --color-text-secondary: #a3a9b0;
+  --color-text-tertiary: #80868d;
+
+  /* ── 2. 브랜드 강조색 "Code Blue" (DESIGN_SYSTEM.md 2.2) ────────────────── */
+  --color-accent: #2f6fed;
+  --color-accent-hover: #4c82f0;
+  --color-accent-muted: #1b2a4a;
+  --color-accent-glow: rgba(47, 111, 237, 0.35);
+
+  /* ── 3. 시맨틱 컬러 (DESIGN_SYSTEM.md 2.3) ──────────────────────────────── */
+  --color-success: #3dd68c;
+  --color-warning: #f5b843;
+  --color-danger: #f0555c;
+
+  /* ── 4. shadcn/ui 시맨틱 토큰 매핑 (다크 단일 테마, 라이트 모드 없음) ───────
+     shadcn 컴포넌트가 기대하는 --primary/--border 등의 이름은 유지하되,
+     값은 전부 위 브랜드 팔레트를 참조하도록 재정의한다. */
+  --background: var(--color-bg-base);
+  --foreground: var(--color-text-primary);
+  --card: var(--color-bg-elevated);
+  --card-foreground: var(--color-text-primary);
+  --popover: var(--color-bg-elevated-2);
+  --popover-foreground: var(--color-text-primary);
+  --primary: var(--color-accent);
+  --primary-foreground: #ffffff;
+  --secondary: var(--color-bg-elevated);
+  --secondary-foreground: var(--color-text-primary);
+  --muted: var(--color-bg-elevated);
+  --muted-foreground: var(--color-text-secondary);
+  --accent: var(--color-accent-muted);
+  --accent-foreground: var(--color-text-primary);
+  --destructive: var(--color-danger);
+  --destructive-foreground: #ffffff;
+  --border: var(--color-border-subtle);
+  --input: var(--color-border-subtle);
+  --ring: var(--color-accent);
+
+  /* ── 5. Spacing (4px 기준 — DESIGN_SYSTEM.md 4장) ───────────────────────
+     Tailwind v4 기본 spacing 스케일(0.25rem 배수)이 이미 4/8/12/16/20/24/32...px와
+     정확히 일치하므로 별도 유틸 재정의 없이 아래는 문서화 및 CSS-in-JS/캔버스 계산용으로만 둔다. */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+  --space-20: 80px;
+  --space-24: 96px;
+  --space-32: 128px;
+
+  /* ── 6. Radius (DESIGN_SYSTEM.md 6장) ───────────────────────────────────── */
+  --radius: 10px;
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  --radius-full: 9999px;
+
+  /* ── 7. Shadow (DESIGN_SYSTEM.md 7장) ───────────────────────────────────── */
+  --shadow-color: 0deg 0% 0%;
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.5);
+  --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.55);
+  --shadow-glow-accent: 0 0 24px var(--color-accent-glow);
+
+  /* ── 8. Typography (DESIGN_SYSTEM.md 3장, 3.4 유동 스케일) ──────────────── */
+  --font-sans: var(--font-pretendard), -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-mono: var(--font-geist-mono), "Geist Mono", monospace;
+
+  --text-display: clamp(2.5rem, 1.6rem + 3.5vw, 4rem);
+  --text-h1: clamp(2rem, 1.5rem + 2vw, 3rem);
+  --text-h2: clamp(1.75rem, 1.4rem + 1.5vw, 2.25rem);
+  --text-h3: clamp(1.375rem, 1.2rem + 0.7vw, 1.75rem);
+  --text-h4: clamp(1.125rem, 1.05rem + 0.3vw, 1.375rem);
+  --text-body-lg: 1.125rem;
+  --text-body: 1rem;
+  --text-body-sm: 0.875rem;
+  --text-caption: 0.75rem;
+
+  /* ── 9. Z-index (DESIGN_SYSTEM.md 14장) ─────────────────────────────────── */
+  --z-base: 0;
+  --z-sticky-header: 100;
+  /* Phase 3B 추가: Scroll Progress Bar는 Header의 배경(Glass Morphism) 위에 항상
+     보여야 하므로 sticky-header보다 한 단계 높은 전용 토큰을 둔다. */
+  --z-scroll-progress: 110;
+  --z-floating-cta: 200;
+  --z-drawer: 300;
+  --z-dropdown: 400;
+  --z-modal-backdrop: 500;
+  --z-modal: 510;
+  --z-toast: 600;
+  --z-tooltip: 700;
+
+  /* ── 10. Motion Token (DESIGN_SYSTEM.md 15장) ───────────────────────────── */
+  --duration-instant: 80ms;
+  --duration-fast: 150ms;
+  --duration-base: 250ms;
+  --duration-slow: 400ms;
+  --duration-scroll: 600ms;
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --ease-linear: linear;
+
+  /* ── 11. Icon 크기 (DESIGN_SYSTEM.md 16장) ──────────────────────────────── */
+  --icon-sm: 20px;
+  --icon-md: 24px;
+  --icon-lg: 32px;
+}
+
+/**
+ * 다크 테마는 브랜드의 기본 정체성이며 라이트 모드 토글은 제공하지 않는다
+ * (DESIGN_SYSTEM.md 12장). `.dark` 클래스는 shadcn 컴포넌트 호환을 위해
+ * 유지하되, 별도 값 오버라이드 없이 :root와 동일한 다크 팔레트를 사용한다.
+ */
+.dark {
+  color-scheme: dark;
+}
+
+@theme inline {
+  /* shadcn 시맨틱 색상 유틸 (bg-background, text-foreground, bg-primary 등) */
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  /* 브랜드 원본 토큰 유틸 (bg-brand-bg-base, text-brand-accent 등 — 시맨틱 롤과 별개로
+     디자인 시스템 원본 값이 직접 필요할 때 사용) */
+  --color-brand-bg-base: var(--color-bg-base);
+  --color-brand-bg-elevated: var(--color-bg-elevated);
+  --color-brand-bg-elevated-2: var(--color-bg-elevated-2);
+  --color-brand-border-subtle: var(--color-border-subtle);
+  --color-brand-border-strong: var(--color-border-strong);
+  --color-brand-text-primary: var(--color-text-primary);
+  --color-brand-text-secondary: var(--color-text-secondary);
+  --color-brand-text-tertiary: var(--color-text-tertiary);
+  --color-brand-accent: var(--color-accent);
+  --color-brand-accent-hover: var(--color-accent-hover);
+  --color-brand-accent-muted: var(--color-accent-muted);
+  --color-brand-success: var(--color-success);
+  --color-brand-warning: var(--color-warning);
+  --color-brand-danger: var(--color-danger);
+
+  /* Radius */
+  --radius-sm: var(--radius-sm);
+  --radius-md: var(--radius-md);
+  --radius-lg: var(--radius-lg);
+  --radius-xl: var(--radius-xl);
+  --radius-full: var(--radius-full);
+
+  /* Shadow */
+  --shadow-sm: var(--shadow-sm);
+  --shadow-md: var(--shadow-md);
+  --shadow-lg: var(--shadow-lg);
+  --shadow-glow-accent: var(--shadow-glow-accent);
+
+  /* Typography */
+  --font-sans: var(--font-sans);
+  --font-mono: var(--font-mono);
+  --text-display: var(--text-display);
+  --text-h1: var(--text-h1);
+  --text-h2: var(--text-h2);
+  --text-h3: var(--text-h3);
+  --text-h4: var(--text-h4);
+  --text-body-lg: var(--text-body-lg);
+  --text-body: var(--text-body);
+  --text-body-sm: var(--text-body-sm);
+  --text-caption: var(--text-caption);
+
+  /* Easing (Tailwind v4 --ease-* 네임스페이스 확인됨) */
+  --ease-out-expo: var(--ease-out-expo);
+  --ease-in-out: var(--ease-in-out);
+  --ease-linear: var(--ease-linear);
+}
+
+/**
+ * Z-index / Duration / Icon 크기는 Tailwind v4의 `@theme` 네임스페이스로
+ * 확장되지 않는 카테고리라, `@utility`로 개별 유틸리티를 직접 정의한다
+ * (DESIGN_SYSTEM.md 14~16장 — 값은 위 :root 토큰을 그대로 참조).
+ */
+@utility z-base { z-index: var(--z-base); }
+@utility z-sticky-header { z-index: var(--z-sticky-header); }
+@utility z-scroll-progress { z-index: var(--z-scroll-progress); }
+@utility z-floating-cta { z-index: var(--z-floating-cta); }
+@utility z-drawer { z-index: var(--z-drawer); }
+@utility z-dropdown { z-index: var(--z-dropdown); }
+@utility z-modal-backdrop { z-index: var(--z-modal-backdrop); }
+@utility z-modal { z-index: var(--z-modal); }
+@utility z-toast { z-index: var(--z-toast); }
+@utility z-tooltip { z-index: var(--z-tooltip); }
+
+@utility duration-instant { transition-duration: var(--duration-instant); }
+@utility duration-fast { transition-duration: var(--duration-fast); }
+@utility duration-base { transition-duration: var(--duration-base); }
+@utility duration-slow { transition-duration: var(--duration-slow); }
+@utility duration-scroll { transition-duration: var(--duration-scroll); }
+
+@utility size-icon-sm { width: var(--icon-sm); height: var(--icon-sm); }
+@utility size-icon-md { width: var(--icon-md); height: var(--icon-md); }
+@utility size-icon-lg { width: var(--icon-lg); height: var(--icon-lg); }

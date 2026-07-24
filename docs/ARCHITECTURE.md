@@ -402,3 +402,84 @@ create table admin_users (
 ```
 - 현재는 `role` 값이 전부 `'owner'`여도 무방하다. 테이블 자체를 미리 만들어두면, 추후 담당자가 늘어나도 RLS 정책과 UI 권한 분기를 테이블 조인만으로 확장할 수 있어 재설계 비용이 없다.
 - DATA_SCHEMA.md 9장(감사 필드)과 연동하여 `created_by`/`updated_by`가 이 테이블을 참조한다.
+
+---
+
+## 15. GSAP 플러그인 초기화 아키텍처 (★ Phase 7C 리뷰 반영 신설)
+
+### 15.1 문제 원인
+
+`AnimationProvider`(`src/components/providers/animation-provider.tsx`)가 `useEffect` 안에서 `gsap.registerPlugin(ScrollTrigger)`를 호출하던 초기 구현은, React가 커밋마다 이펙트를 **"자식 → 부모" 순서**(post-order)로 실행한다는 사실과 충돌했다.
+
+`AnimationProvider`는 `AppProviders`를 통해 Hero/Bridge/Trust/Difference/Review 등 GSAP을 쓰는 모든 Section의 **조상(ancestor)** 위치에서 렌더링된다. 이펙트가 자식부터 실행되는 React의 커밋 순서상, 조상인 `AnimationProvider`의 `useEffect`는 언제나 자식 Section들의 `useLayoutEffect`(심지어 `useEffect`)보다 **늦게** 실행된다. 그 결과 각 Section이 `ScrollTrigger.create()` 또는 `scrollTrigger: {...}` 옵션을 사용하는 시점에 플러그인이 아직 등록되지 않아 `"Missing plugin?"` 경고와 `gsap.context()` 관련 런타임 크래시가 발생했다(Hero/Bridge/Trust/Difference/Review 전부 동일하게 영향을 받음).
+
+즉 근본 원인은 특정 컴포넌트의 실수가 아니라, **"플러그인 등록 시점을 React 생명주기(부모의 이펙트)에 맡긴 설계 자체"**였다.
+
+### 15.2 해결 구조 — 모듈 스코프(top-level) 등록
+
+`gsap.registerPlugin(ScrollTrigger)` 호출을 어떤 React 컴포넌트의 함수 본문/훅에서도 꺼내, `animation-provider.tsx`의 **모듈 최상위(top-level)**에 단 한 줄로 둔다.
+
+```ts
+// animation-provider.tsx — 모듈이 import되는 즉시, 어떤 컴포넌트 함수도 호출되기 전에 실행된다.
+gsap.registerPlugin(ScrollTrigger);
+
+export function AnimationProvider({ children }: { children: ReactNode }) {
+  // ... prefersReducedMotion Context 제공만 담당. 등록 관련 코드 없음.
+}
+```
+
+이 방식이 안전한 이유:
+- **ES 모듈은 최초 1회만 평가되어 캐시**된다(멱등) — 아무리 여러 곳에서 import해도 이 줄은 애플리케이션 전체에서 정확히 한 번만 실행된다.
+- 모듈 top-level 코드는 **React가 트리를 구성/렌더/커밋하기 전, import 시점**에 이미 끝나 있다. 따라서 "부모 vs 자식 중 어느 이펙트가 먼저 실행되는가" 자체가 성립하지 않는 시점에 등록이 완료된다 — React 생명주기와 완전히 독립적이다.
+- `AnimationProvider`는 Root Layout(`AppProviders`)이 정적으로 import하므로, 어떤 Section이 언제 마운트되든 그 모듈이 평가되는 시점에는 이미 등록이 끝나 있다.
+- StrictMode의 이펙트 이중 실행(mount→unmount→remount)은 컴포넌트 함수/이펙트에만 적용되며 모듈 top-level 코드에는 적용되지 않으므로, StrictMode 여부와 무관하게 정확히 1회만 실행된다.
+- `gsap.registerPlugin`은 내부적으로 SSR 환경(`window` 부재)에서도 안전하도록 가드되어 있어(GSAP ScrollTrigger의 `_windowExists()` 체크), Next.js 서버 렌더링 중 모듈이 평가되어도 문제가 없다.
+
+### 15.3 전역 규칙
+
+- **`gsap.registerPlugin(ScrollTrigger)`는 프로젝트 전체에서 `animation-provider.tsx` 단 한 곳에서만 호출한다.** 새 Section이 GSAP/ScrollTrigger를 사용하더라도 이 등록을 반복하지 않고 `AnimationProvider`의 등록에 의존한다(해당 컴포넌트는 `AppProviders` 하위에서만 렌더링되므로 항상 보장된다).
+- 각 Section 컴포넌트는 여전히 자기 자신의 타임라인/`ScrollTrigger.create()`/`gsap.context()`는 직접 관리한다 — `AnimationProvider`가 담당하는 것은 오직 "플러그인 등록"과 "`prefersReducedMotion` Context 제공" 두 가지뿐이다.
+
+---
+
+## 16. SEO / 구조화 데이터 아키텍처 (★ Phase 10A 리뷰 반영 신설)
+
+DEVELOPMENT_PLAN.md Phase 10A(SEO Foundation & Structured Data)에서 SEO_PLAN.md의 계획을 실제로 배선했다. 이 장은 "어디에 무엇이 있는가"와, 구현 중 SEO_PLAN.md 원안과 달라진 지점 및 그 이유를 기록한다.
+
+### 16.1 파일 배치
+
+| 파일 | 역할 |
+|---|---|
+| `lib/constants/site.ts` | 사이트 전역 상수(`siteConfig`) — 도메인/타이틀/설명/keywords/locale/category |
+| `lib/seo/metadata.ts` | `app/layout.tsx`가 export하는 전역 `Metadata` 객체(`defaultMetadata`) |
+| `lib/seo/jsonld.ts` | 엔티티별 JSON-LD 빌더 함수 모음 — Repository를 호출해 데이터를 채우며, 호출부(레이아웃/페이지)는 데이터 소스를 모른다(3장 원칙과 동일) |
+| `components/seo/json-ld.tsx` | `<script type="application/ld+json">`을 안전하게 렌더링하는 공통 컴포넌트 |
+| `app/opengraph-image.tsx` | OG/Twitter 카드 이미지를 `ImageResponse`로 동적 생성(app 루트 = 전역 적용) |
+| `app/sitemap.ts`, `app/robots.ts`, `app/manifest.ts`, `app/icon.tsx`, `app/apple-icon.tsx` | Next.js Metadata 파일 컨벤션 |
+
+### 16.2 JSON-LD 주입 위치 — 전역 vs 페이지 전용
+
+- `app/layout.tsx`(전역, 모든 라우트 공통): `Organization`(ContactPoint 포함), `WebSite`.
+- `app/(public)/page.tsx`(Home 전용): `ProfessionalService`, `ContactPage`, `FAQPage`. 이 셋은 Home 페이지에 실제로 존재하는 섹션(Contact/FAQ)에 대응하는 데이터이므로 전역이 아니라 그 데이터를 이미 조회해 둔 페이지가 직접 주입한다 — 서브페이지가 늘어나면 각 페이지가 자신에게 맞는 구조화 데이터만 추가하면 된다.
+- `FAQPage`는 `FaqSection`에 실제로 전달하는 것과 동일한 `faqs` 배열을 그대로 재사용한다(SEO_PLAN.md 5.7 "구조화 데이터는 반드시 화면과 일치") — 별도로 다시 조회하지 않는다.
+
+### 16.3 JSON-LD 인젝션 보안
+
+`components/seo/json-ld.tsx`는 `JSON.stringify(data)` 결과에서 `<`를 `<`로 escape한 뒤 `dangerouslySetInnerHTML`로 주입한다. FAQ 답변처럼 관리자가 입력하는 문자열이 JSON-LD 값에 섞여 들어갈 수 있으므로, 이스케이프 없이 그대로 주입하면 `</script>` 시퀀스가 스크립트 태그를 조기 종료시키고 그 뒤에 임의 스크립트가 실행되는 인젝션이 가능하다. 13장이 금지하는 "관리자 입력 raw HTML 렌더링"과는 다른, JSON-LD 표준 주입 방식에 대한 예외이며 반드시 이 이스케이프를 거쳐야 한다.
+
+### 16.4 `ProfessionalService` vs `LocalBusiness` 선택
+
+SEO_PLAN.md 5.2 원안은 `LocalBusiness`를 제안했다. Phase 10A에서 `ProfessionalService`로 교체했다:
+
+- `LocalBusiness`(및 그 하위 타입)는 고객이 실제로 찾아오는 물리적 장소(매장, 진료실, 사무실 방문 상담 등)가 있는 사업자에 적합한 schema.org 타입이다.
+- CodeBlue는 고객이 방문하는 오프라인 지점이 없는 웹사이트 제작 대행/용역(B2B 서비스) 사업자다. `ContactInfo.address`도 현재 값이 없다(`lib/data/contact.data.ts`).
+- `ProfessionalService`는 "물리적 방문 없이 전문 서비스를 제공하는 사업자"에 정확히 대응하므로 실제 사업 형태와 더 정확히 일치한다.
+- `address`는 `ContactInfo.address`가 있을 때만 조건부로 포함한다(하드코딩 금지) — 값이 채워지면 자동으로 구조화 데이터에도 반영된다.
+
+### 16.5 Sitemap은 "실제로 존재하는 라우트"만 반영한다
+
+SEO_PLAN.md 6장 원안 코드는 `/services`, `/portfolio`, `/reviews`, `/faq`, `/contact`, `/about`을 정적 라우트로 나열하고 `getAllPortfolios()`/`getAllServices()`로 상세 페이지까지 나열했다. 하지만 실제로 구현된 라우트는 `app/(public)/page.tsx`(Home, `/`) 하나뿐이며, 위 이름들은 Home 안의 섹션 앵커 id(`#about`, `#faq`, `#contact` 등)일 뿐 별도 페이지가 아니다. sitemap이 존재하지 않는 URL을 나열하면 검색엔진이 크롤링할 때마다 404를 만나 크롤링 신뢰도가 떨어지므로, Phase 10A에서 실제 라우트(`/`)만 반영하도록 수정했다. 서브페이지(포트폴리오/서비스 목록·상세 등)가 실제로 만들어지는 시점에 해당 Repository 호출과 라우트를 다시 추가한다 — Repository 함수 자체는 이미 존재하므로 그때 가서 바로 연동 가능하다.
+
+### 16.6 OG/Twitter 이미지는 정적 파일이 아니라 동적 생성이다
+
+이전에는 `siteConfig.ogImage`가 `public/og/default.png`(실제로 존재하지 않는 파일)를 가리켜 SNS 공유 시 이미지가 깨졌다. `app/opengraph-image.tsx`(`next/og`의 `ImageResponse`, `icon.tsx`/`apple-icon.tsx`와 동일한 다크 브랜드 톤)로 교체했다 — 별도 `twitter-image.tsx`는 만들지 않는다, `twitter.images`를 명시하지 않으면 Next.js가 이 OG 이미지를 그대로 재사용하기 때문이다(SEO_PLAN.md 4장 "자산 공유" 원칙과 정확히 일치, 실제 렌더링 HTML로 확인함).

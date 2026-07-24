@@ -269,6 +269,7 @@ font-family:
 |---|---|---|
 | `--z-base` | 0 | 기본 문서 흐름 |
 | `--z-sticky-header` | 100 | Sticky Header |
+| `--z-scroll-progress` | 110 | Scroll Progress Bar (★ Phase 3B 추가 — Header 배경 위에 항상 표시) |
 | `--z-floating-cta` | 200 | FloatingCTA 버튼 |
 | `--z-drawer` | 300 | MobileDrawer |
 | `--z-dropdown` | 400 | Dropdown, Tabs 팝오버 |

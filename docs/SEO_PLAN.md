@@ -27,8 +27,19 @@ export const metadata: Metadata = {
   },
   description: '예쁜 홈페이지가 아니라 문의와 매출을 만드는 홈페이지. 소상공인, 병원, 제조업, 스타트업을 위한 전환 설계 웹사이트 제작 CodeBlue.',
   keywords: ['홈페이지 제작', '랜딩페이지 제작', '병원 홈페이지', '제조업 홈페이지', '전환율 높은 홈페이지', '웹사이트 제작 회사'],
+  authors: [{ name: 'CodeBlue' }],
+  creator: 'CodeBlue',
+  publisher: 'CodeBlue',
+  category: 'technology',
+  alternates: { canonical: '/' },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: { index: true, follow: true, 'max-image-preview': 'large', 'max-snippet': -1 },
+  },
 };
 ```
+- **(★ Phase 10A 구현 반영)** `creator`/`publisher`/`category`/`googleBot` 세부 지시어까지 실제로 채웠다(`lib/seo/metadata.ts`).
 
 ### 2.2 페이지별 메타데이터 원칙
 | 페이지 | Title 패턴 | Description 전략 |
@@ -73,6 +84,7 @@ openGraph: {
 
 - **OG 이미지 전략**: 홈/서비스/포트폴리오 등 주요 페이지는 전용 OG 이미지(1200x630)를 사전 제작. 포트폴리오 상세는 `thumbnail` 데이터를 기반으로 동적 생성(Next.js `ImageResponse` API 활용 고려)하여 관리 부담 최소화.
 - 다크 테마 브랜드 톤을 OG 이미지에도 일관 적용(로고 + 헤드라인 + 다크 배경)하여 SNS 공유 시에도 프리미엄 인상을 유지한다.
+- **(★ Phase 10A 구현 반영)** 정적 이미지 사전 제작 대신 `app/opengraph-image.tsx`(Next.js `opengraph-image` 파일 컨벤션 + `ImageResponse`)로 전역 OG 이미지를 코드로 생성했다 — 실제 로고/디자인 자산 없이도 항상 유효한 이미지를 보장하고, `icon.tsx`/`apple-icon.tsx`와 동일한 다크 브랜드 톤을 코드 레벨에서 강제한다. 별도 `twitter-image.tsx`는 만들지 않는다(아래 4장 참고). 서브페이지가 생기면 각 라우트 폴더에 더 구체적인 `opengraph-image.tsx`를 추가해 이 전역 이미지를 오버라이드하면 된다.
 
 ---
 
@@ -87,6 +99,7 @@ twitter: {
 }
 ```
 - Open Graph 이미지와 자산을 공유하여 별도 제작 비용 없이 일관성 유지
+- **(★ Phase 10A 구현 반영)** `twitter.images`를 명시적으로 지정하지 않는다 — Next.js는 `twitter-image` 파일/메타데이터가 없으면 `opengraph-image`(3장)를 그대로 twitter:image로 재사용한다. 실제 렌더링된 HTML에서 `og:image`와 `twitter:image`가 동일한 URL을 가리키는 것으로 확인했다.
 
 ---
 
@@ -115,13 +128,16 @@ twitter: {
 ```
 > `contactPoint`는 ★ 리뷰 반영 추가 항목이다 — 기존에는 Organization 스키마에 연락 채널 정보가 없어 구글이 조직의 공식 연락 경로를 인식할 근거가 부족했다.
 
-### 5.2 LocalBusiness Schema (`/`, `/contact` — ContactInfo 데이터 연동)
+### 5.2 ProfessionalService Schema (`/` — ContactInfo 데이터 연동)
+
+**(★ Phase 10A 구현 반영 — 타입 변경)** 원안은 `LocalBusiness`였으나 구현 시 `ProfessionalService`로 교체했다. `LocalBusiness`(및 하위 타입)는 고객이 실제로 방문하는 물리적 장소가 있는 사업자에 적합한 타입이다. CodeBlue는 고객이 방문하는 오프라인 지점이 없는 웹사이트 제작 대행/용역(B2B 서비스) 사업자이고 `ContactInfo.address`도 비어 있어, "물리적 방문 없이 전문 서비스를 제공하는 사업자"에 대응하는 `ProfessionalService`가 실제 사업 형태와 더 정확히 일치한다(상세 근거: ARCHITECTURE.md 16.4).
+
 ```json
 {
   "@context": "https://schema.org",
-  "@type": "LocalBusiness",
+  "@type": "ProfessionalService",
   "name": "{contactInfo.companyName}",
-  "image": "https://codeblue.example.com/logo.png",
+  "image": "https://codeblue.example.com/apple-icon",
   "telephone": "{contactInfo.phone}",
   "email": "{contactInfo.email}",
   "address": {
@@ -132,7 +148,7 @@ twitter: {
   "openingHours": "{contactInfo.operatingHours}"
 }
 ```
-- 이 스키마는 `getContactInfo()` Repository 함수 결과를 직접 매핑하여 생성 — 하드코딩 금지, 데이터 변경 시 자동 반영.
+- 이 스키마는 `getContactInfo()` Repository 함수 결과를 직접 매핑하여 생성 — 하드코딩 금지, 데이터 변경 시 자동 반영. `address`는 `contactInfo.address`가 실제로 존재할 때만 포함한다.
 
 ### 5.3 Service Schema (`/services/[slug]`)
 ```json
@@ -185,6 +201,8 @@ twitter: {
 
 ## 6. Sitemap 전략 (`app/sitemap.ts`)
 
+**(★ Phase 10A 구현 반영 — 실제 라우트만 반영하도록 수정)** 아래는 서브페이지(포트폴리오/서비스 목록·상세, `/reviews`, `/faq`, `/contact`, `/about` 등 별도 라우트)가 실제로 만들어졌을 때의 **목표 형태**다. 지금은 이 이름들이 전부 Home(`/`) 안의 섹션 앵커 id일 뿐 실제 페이지가 아니므로, sitemap에 넣으면 검색엔진이 크롤링할 때마다 404를 만난다. 현재 `app/sitemap.ts`는 실제로 존재하는 라우트(`/`)만 반환하며, 아래 서브페이지들이 실제로 구현되는 시점에 이 예시대로 되돌린다.
+
 ```ts
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const portfolios = await getAllPortfolios();
@@ -218,6 +236,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 - sitemap은 **데이터 레이어에서 동적으로 생성**되며, Supabase 전환 이후에도 동일 Repository 함수를 사용하므로 수정이 불필요하다.
 - `/legal/*`는 우선순위 최하위(0.2)로 포함하거나 SEO 가치가 낮으므로 생략 가능.
 - `/admin/*`는 sitemap에서 완전히 제외.
+- **sitemap에는 실제로 존재하는(200을 반환하는) 라우트만 넣는다** — 계획 단계의 라우트를 미리 넣지 않는다(ARCHITECTURE.md 16.5).
 
 ---
 
@@ -252,8 +271,8 @@ export default function robots(): MetadataRoute.Robots {
   h1: Hero 헤드라인
   h2: Storytelling 섹션 타이틀
   h2: Trust 섹션 타이틀
-  h2: Difference 섹션 타이틀
-    h3: 각 차별점 카드 타이틀
+  h2: Difference 섹션 타이틀(Block 1)
+    h3: Block 2 타이틀
   h2: Portfolio 섹션 타이틀
     h3: 각 포트폴리오 카드 타이틀
   h2: Review 섹션 타이틀
@@ -304,15 +323,16 @@ ARCHITECTURE.md 8장에는 "Static + ISR"라고만 되어 있어 실제 캐시 �
 
 ---
 
-## 9.5 Favicon / Manifest (★ 리뷰 반영 신설)
-기존 설계에 파비콘/PWA 매니페스트 등 기본 기술 SEO 자산이 누락되어 있었다.
+## 9.5 Favicon / Manifest (★ 리뷰 반영 신설, ★ Phase 10A 구현 반영)
+기존 설계에 파비콘/PWA 매니페스트 등 기본 기술 SEO 자산이 누락되어 있었다. 실제로는 정적 PNG를 미리 제작하는 대신, `icon.tsx`/`apple-icon.tsx`를 Next.js의 코드 생성 컨벤션(`ImageResponse`)으로 구현해 디자인 자산 없이도 항상 유효한 아이콘을 보장한다 — `app/favicon.ico`(레거시 브라우저/북마크 호환용)만 정적 파일로 유지한다.
 ```
-app/favicon.ico
-app/icon.png            # 512x512, Next.js 자동 인식
-app/apple-icon.png      # 180x180
-app/manifest.ts         # Next.js Metadata API 기반 웹 매니페스트
+app/favicon.ico         # 정적 파일 (레거시 호환)
+app/icon.tsx             # 32x32, ImageResponse로 생성 — Next.js가 <link rel="icon">으로 자동 인식
+app/apple-icon.tsx       # 180x180, ImageResponse로 생성 — <link rel="apple-touch-icon">
+app/opengraph-image.tsx  # 1200x630, OG/Twitter 카드 이미지(3장 참고)
+app/manifest.ts          # Next.js Metadata API 기반 웹 매니페스트
 ```
-- `manifest.ts`에는 `name`, `short_name`, `theme_color`(다크 테마 배경색 `#08090B`), `background_color`, `icons` 배열을 정의하여 모바일 홈 화면 추가 시에도 브랜드 일관성을 유지한다.
+- `manifest.ts`에는 `name`, `short_name`, `theme_color`(다크 테마 배경색 `#08090B`), `background_color`, `icons` 배열을 정의하여 모바일 홈 화면 추가 시에도 브랜드 일관성을 유지한다. `icons` 배열은 `/icon`(32×32)과 `/apple-icon`(180×180) 두 크기를 모두 포함한다.
 
 ---
 

@@ -111,25 +111,32 @@ create index idx_portfolios_published_order on portfolios(is_published, "order")
 
 ---
 
-## 3. Review (고객 후기)
+## 3. Review (고객 후기, ★ Phase 7A 갱신)
 
 ### 3.1 TypeScript 타입 (`types/review.ts`)
+
+Foundation 단계에서 만들어둔 최초 스키마(authorName/industry/relatedPortfolioId/소프트 삭제 등,
+`/reviews` 전체 목록 페이지까지 염두에 둔 다목적 설계)는 아직 어떤 컴포넌트도 소비하지 않던
+초기 스케폴드였다. 홈 Review 섹션(Phase 7A) 구현 시점에 실제 요구사항에 맞춰 아래와 같이
+단순화했다 — `/reviews` 전용 페이지나 관리자 연동 단계에서 industry/soft-delete 등이
+다시 필요해지면 그때 확장한다.
+
 ```ts
+export interface ReviewAvatar {
+  src: string;
+  alt: string;
+}
+
 export interface Review {
   id: string;
-  authorName: string;
-  authorRole?: string;        // 예: "대표", "원장"
-  company?: string;
-  industry: PortfolioCategory | 'other';
-  avatar?: { src: string; alt: string };
+  name: string;               // 작성자 이름
+  company: string;             // 회사명
+  position: string;             // 직책
   rating: 1 | 2 | 3 | 4 | 5;
   content: string;
-  relatedPortfolioId?: string;  // Portfolio와 연결(선택)
+  avatar: ReviewAvatar;
   order: number;
   isPublished: boolean;
-  deletedAt: string | null;     // ★ 리뷰 반영 — 소프트 삭제
-  createdBy?: string;
-  updatedBy?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -139,22 +146,18 @@ export interface Review {
 ```sql
 create table reviews (
   id uuid primary key default gen_random_uuid(),
-  author_name text not null,
-  author_role text,
-  company text,
-  industry text not null default 'other',
-  avatar jsonb,
+  name text not null,
+  company text not null,
+  position text not null,
   rating smallint not null check (rating between 1 and 5),
   content text not null,
-  related_portfolio_id uuid references portfolios(id) on delete set null,
+  avatar jsonb not null,          -- { src, alt }
   "order" integer not null default 0,
   is_published boolean not null default true,
-  deleted_at timestamptz,
-  created_by uuid references admin_users(id),
-  updated_by uuid references admin_users(id),
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
+create index idx_reviews_published_order on reviews(is_published, "order");
 ```
 
 ---
@@ -168,6 +171,7 @@ export type FaqCategory = 'price' | 'process' | 'timeline' | 'maintenance' | 'te
 export interface Faq {
   id: string;
   category: FaqCategory;
+  emoji: string;                   // 질문 왼쪽에 붙는 카테고리 이모지 하나, 예: "🚀"(category와 별개)
   question: string;
   answer: string;                 // Rich text 대비 시 markdown 문자열도 허용
   order: number;
@@ -182,6 +186,7 @@ export interface Faq {
 create table faqs (
   id uuid primary key default gen_random_uuid(),
   category text not null default 'general',
+  emoji text not null,
   question text not null,
   answer text not null,
   "order" integer not null default 0,
@@ -209,6 +214,7 @@ export interface Service {
   summary: string;                 // 한 줄 요약
   description: string;              // 상세 설명
   targetAudience: string[];          // 예: ["소상공인", "스타트업"]
+  industryHighlight?: string;         // 카드 노출용 "OO 홈페이지 제작" 문장(2026-07-24 SEO 보강)
   features: ServiceFeature[];
   icon?: string;                       // lucide 아이콘 키
   relatedPortfolioIds?: string[];
@@ -228,6 +234,7 @@ create table services (
   summary text not null,
   description text not null,
   target_audience jsonb not null default '[]',
+  industry_highlight text,
   features jsonb not null default '[]',
   icon text,
   related_portfolio_ids uuid[] default '{}',
@@ -251,9 +258,9 @@ export interface ContactInfo {
   representativeName?: string;
   address?: string;
   email: string;
-  phone: string;
+  phone?: string;                  // 공개 노출할 번호가 없으면 비워둔다(UI/JSON-LD 모두 자동 생략)
   kakaoChannelUrl?: string;
-  operatingHours?: string;         // 예: "평일 10:00 - 19:00"
+  operatingHours?: string;         // 예: "평일, 주말 24시간 · 365일"
   socialLinks?: { platform: string; url: string }[];
   updatedAt: string;
 }
@@ -288,7 +295,7 @@ create table contact_info (
   representative_name text,
   address text,
   email text not null,
-  phone text not null,
+  phone text,
   kakao_channel_url text,
   operating_hours text,
   social_links jsonb default '[]',
@@ -360,13 +367,114 @@ create unique index idx_cta_active_slot on cta_items(slot) where is_active = tru
 
 ---
 
+## 7.5 TrustMetric (신뢰 지표, ★ Phase 5B 구조 신설 + 5C 실데이터/애니메이션 반영)
+
+### 7.5.1 TypeScript 타입 (`types/trust-metric.ts`)
+```ts
+export interface TrustMetric {
+  id: string;
+  icon: string;               // lucide-react 아이콘 이름 (lib/icons.ts ICON_MAP으로 resolve)
+  value: number;               // 카운트업 목표값 (예: 2, 84, 32)
+  prefix?: string;
+  suffix?: string;
+  progress: number;             // ★ Phase 5C 추가 — Progress Bar/Circle 채움 비율(0~100), value와 독립적
+  title: string;               // 숫자 아래 표시되는 짧은 라벨
+  description: string;
+  source: string;                // "출처 : {source}"로 렌더링. 실제 인용/링크는 관리자 페이지 연동 후 채운다
+  order: number;
+  isPublished: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+```
+
+### 7.5.2 Supabase 테이블 설계 (`trust_metrics`)
+```sql
+create table trust_metrics (
+  id uuid primary key default gen_random_uuid(),
+  icon text not null,
+  value numeric not null default 0,
+  prefix text,
+  suffix text,
+  progress numeric not null default 0 check (progress >= 0 and progress <= 100),
+  title text not null,
+  description text not null,
+  source text not null default '자료 준비 중',
+  "order" integer not null default 0,
+  is_published boolean not null default true,
+  created_by uuid references admin_users(id),
+  updated_by uuid references admin_users(id),
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+create index idx_trust_metrics_published_order on trust_metrics(is_published, "order");
+```
+> `admin_users` 참조는 ARCHITECTURE.md 14장(관리자 권한 RBAC 확장 대비) 정의를 그대로 따른다(10장과 동일한 단일 진실 공급원 원칙).
+
+---
+
+## 7.6 Difference (차별점 섹션, ★ Phase 6A 신설, 2026-07-22 콘텐츠 전면 교체)
+
+"왜 코드블루를 선택해야 하는가"를 설득하는 섹션의 두 엔티티 — Block 1("100% 후불제") 안심
+체크리스트(AssuranceChecklistItem)와 템플릿 대비 비교표 한 행(ComparisonTableRow). 기존
+DifferenceComparison/DifferenceFeature(비교 카드 + 하단 Feature Card)는 콘텐츠 개편으로
+대체되었다.
+
+### 7.6.1 TypeScript 타입 (`types/difference.ts`)
+```ts
+export interface AssuranceChecklistItem {
+  id: string;
+  label: string;                  // 예: "선금 없습니다"
+  order: number;
+  isPublished: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ComparisonTableRow {
+  id: string;
+  templateValue: string;          // 예: "착수금 또는 매월 이용료"
+  codeblueValue: string;          // 예: "100% 후불제 + 평생 소장"
+  order: number;
+  isPublished: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+```
+
+### 7.6.2 Supabase 테이블 설계 (`assurance_checklist_items`, `comparison_table_rows`)
+```sql
+create table assurance_checklist_items (
+  id uuid primary key default gen_random_uuid(),
+  label text not null,
+  "order" integer not null default 0,
+  is_published boolean not null default true,
+  created_by uuid references admin_users(id),
+  updated_by uuid references admin_users(id),
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+create index idx_assurance_checklist_items_published_order on assurance_checklist_items(is_published, "order");
+
+create table comparison_table_rows (
+  id uuid primary key default gen_random_uuid(),
+  template_value text not null,
+  codeblue_value text not null,
+  "order" integer not null default 0,
+  is_published boolean not null default true,
+  created_by uuid references admin_users(id),
+  updated_by uuid references admin_users(id),
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+create index idx_comparison_table_rows_published_order on comparison_table_rows(is_published, "order");
+```
+
+---
+
 ## 8. 엔티티 관계 다이어그램 (ERD 요약)
 
 ```
-portfolios ──┐
-             │ (related_portfolio_id, optional)
-reviews ─────┘
-
 portfolios ──┐
              │ (related_portfolio_ids[], optional)
 services ────┘
@@ -375,6 +483,10 @@ cta_items   (독립 — slot 기준으로 각 페이지/섹션이 참조)
 contact_info (독립 — 싱글턴)
 inquiries    (독립 — Contact 폼에서 생성, 관계 없음)
 faqs         (독립)
+trust_metrics (독립)
+assurance_checklist_items (독립)
+comparison_table_rows     (독립)
+reviews      (독립 — ★ Phase 7A 갱신: portfolios 참조(related_portfolio_id) 제거)
 ```
 
 ---
@@ -388,7 +500,6 @@ faqs         (독립)
 | | `getPortfolioBySlug(slug)` | `Portfolio \| null` |
 | | `getPortfoliosByCategory(category)` | `Portfolio[]` |
 | Review | `getAllReviews()` | `Review[]` |
-| | `getFeaturedReviews(limit?)` | `Review[]` |
 | FAQ | `getAllFaqs()` | `Faq[]` |
 | | `getFaqsByCategory(category)` | `Faq[]` |
 | Service | `getAllServices()` | `Service[]` |
@@ -396,6 +507,9 @@ faqs         (독립)
 | Contact | `getContactInfo()` | `ContactInfo` |
 | | `submitInquiry(payload)` | `{ success: boolean; id?: string }` |
 | CTA | `getCtaBySlot(slot)` | `Cta \| null` |
+| TrustMetric | `getAllTrustMetrics()` | `TrustMetric[]` |
+| Difference | `getAllAssuranceChecklist()` | `AssuranceChecklistItem[]` |
+| | `getAllComparisonTableRows()` | `ComparisonTableRow[]` |
 
 이 시그니처는 데이터 소스가 하드코딩이든 Supabase든 동일하게 유지되어야 하는 **계약(Contract)**이다.
 
