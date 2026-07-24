@@ -83,4 +83,12 @@ export const defaultMetadata: Metadata = {
       "max-snippet": -1,
     },
   },
+  /**
+   * Google Search Console 소유권 확인(2026-07-25). Next.js의 `verification.google`이
+   * `<meta name="google-site-verification" content="...">`를 자동으로 렌더링한다 —
+   * 전역 메타데이터라 모든 라우트에 공통 적용된다.
+   */
+  verification: {
+    google: "44iKP58RedorPUx3ph_6Hg09kBTowrB8z2WSZc4xNp4",
+  },
 };
