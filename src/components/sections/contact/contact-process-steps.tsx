@@ -24,8 +24,8 @@ const EASE_OUT = "power2.out";
  * Contact 섹션 왼쪽 컬럼의 진행 절차(요청사항 ③, Foundation은 Phase 9A) —
  * DEVELOPMENT_PLAN.md Phase 9B(Animation & Conversion UX).
  *
- * 데이터 소스가 없는 순수 정적 콘텐츠라 Repository를 거치지 않는다(Hero/Bridge의 정적 문구와
- * 동일한 원칙) — Trust/Difference처럼 문자열 아이콘 키를 DB에서 조회해 `resolveIcon`으로
+ * 데이터 소스가 없는 순수 정적 콘텐츠라 Repository를 거치지 않는다(Hero의 정적 문구와
+ * 동일한 원칙) — Difference처럼 문자열 아이콘 키를 DB에서 조회해 `resolveIcon`으로
  * 변환할 필요가 없으므로 lucide 아이콘 컴포넌트를 직접 사용하고, 아이콘 배경은 Phase 2의
  * `IconWrapper`를 그대로 재사용한다. 순서가 있는 절차이므로 `<ol>`로 마크업한다.
  *

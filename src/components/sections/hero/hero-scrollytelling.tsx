@@ -18,19 +18,19 @@ const DIM_OPACITY = 0.2;
 /**
  * Hero 텍스트 스토리텔링 (모션 허용 사용자) — DEVELOPMENT_PLAN.md Phase 4B.
  *
- * 구조: `<section>`을 뷰포트의 3배 높이(300vh)로 늘려 스크롤 여유 구간을 확보하고,
+ * 구조: `<section>`을 뷰포트의 2배 높이(200vh)로 늘려 스크롤 여유 구간을 확보하고,
  * 실제 시각 콘텐츠는 그 안에서 `position: sticky`(CSS)로 한 화면에 고정한다.
  * GSAP의 `pin: true`(Pinning)는 이번 단계에서 금지되어 있으므로 사용하지 않으며,
  * ScrollTrigger는 오직 스크롤 진행률을 읽어 타임라인을 scrub하는 용도로만 쓰인다.
  *
- * 3개 문장은 각각 "절대 위치+중앙 정렬용 wrapper `<div>`" 안에 실제 텍스트(H1 + 두 개의
- * `<p>`)를 담아 같은 좌표에 겹쳐 놓고, wrapper의 opacity/y만 애니메이션한다 — 텍스트 위치가
- * 흔들리지 않고 "읽기"에만 집중할 수 있다. `flex`(절대 위치+중앙 정렬)는 반드시 텍스트가
- * 없는 wrapper에만 걸어야 한다 — Heading 자신에게 걸면 `display:flex`가 텍스트/`<span>`
- * 자식을 각각 별도 flex item으로 쪼개 모바일 좁은 폭에서 글자가 세로로 흩어지는
- * 버그가 있었다(2026-07-25 실측 수정, 아래 JSX 주석 참고).
+ * 2개 문장(문제 제기 → 해결책)은 각각 "절대 위치+중앙 정렬용 wrapper `<div>`" 안에 실제
+ * 텍스트(H1 + `<p>`)를 담아 같은 좌표에 겹쳐 놓고, wrapper의 opacity/y만 애니메이션한다 —
+ * 텍스트 위치가 흔들리지 않고 "읽기"에만 집중할 수 있다. `flex`(절대 위치+중앙 정렬)는
+ * 반드시 텍스트가 없는 wrapper에만 걸어야 한다 — Heading 자신에게 걸면 `display:flex`가
+ * 텍스트/`<span>` 자식을 각각 별도 flex item으로 쪼개 모바일 좁은 폭에서 글자가 세로로
+ * 흩어지는 버그가 있었다(2026-07-25 실측 수정, 아래 JSX 주석 참고).
  *
- * `#about`(다음 섹션)의 문서상 위치가 이 섹션의 실제 높이(300vh)만큼 자동으로
+ * `#about`(다음 섹션)의 문서상 위치가 이 섹션의 실제 높이(200vh)만큼 자동으로
  * 밀려나므로, Header/FloatingCTA의 Hero 경계 판정(LayoutScrollProvider)은
  * 코드 수정 없이 이 늘어난 스크롤 구간 전체를 그대로 "Hero 영역"으로 인식한다.
  */
@@ -40,7 +40,6 @@ export function HeroScrollytelling({ ctaPrimary, ctaSecondary, riskReversalItems
   // <div> wrapper를 가리킨다 — 타입도 함께 HTMLDivElement로 맞춘다.
   const sentence1Ref = useRef<HTMLDivElement>(null);
   const sentence2Ref = useRef<HTMLDivElement>(null);
-  const sentence3Ref = useRef<HTMLDivElement>(null);
   const indicatorRef = useRef<HTMLDivElement>(null);
   const glowRef = useRef<HTMLDivElement>(null);
 
@@ -59,15 +58,15 @@ export function HeroScrollytelling({ ctaPrimary, ctaSecondary, riskReversalItems
       // 전 상태를 항상 `gsap.set()`으로 먼저 고정하는 것과 동일한 원칙(DEVELOPMENT_PLAN.md Phase
       // 7C). scrub 타임라인에 `.set()`을 넣으면 ScrollTrigger가 "진행률이 0에서 0으로 그대로"라고
       // 판단해 최초 렌더를 건너뛰어(진행률 변화가 없다는 내부 최적화), 스크롤하기 전까지 문장
-      // 2·3이 숨겨지지 않고 문장 1과 겹쳐 보이는 문제가 있었다.
+      // 2가 숨겨지지 않고 문장 1과 겹쳐 보이는 문제가 있었다.
       //
       // 이 gsap.set()을 `useEffect`(커밋 후 비동기)가 아니라 `useLayoutEffect`(페인트 전
-      // 동기)로 실행하는 이유도 동일한 종류의 문제다 — bridge-section.tsx와 같은 원칙
-      // (BridgeSection 주석 참조). 그것만으로는 하이드레이션 전(서버 렌더 HTML이 브라우저에
-      // 페인트된 시점 ~ JS가 실행되는 시점 사이)의 깜빡임까지는 못 막으므로, 문장 2·3의 JSX
+      // 동기)로 실행하는 이유도 동일한 종류의 문제다 — urgency-section.tsx 등 다른 섹션과
+      // 같은 원칙. 그것만으로는 하이드레이션 전(서버 렌더 HTML이 브라우저에
+      // 페인트된 시점 ~ JS가 실행되는 시점 사이)의 깜빡임까지는 못 막으므로, 문장 2의 JSX
       // 자체에도 `opacity-0` 클래스를 기본값으로 둔다(아래) — 두 안전장치를 합쳐야 최초 로딩
-      // 중 세 문장이 겹쳐 잠깐 보이는 현상이 완전히 사라진다.
-      gsap.set([sentence2Ref.current, sentence3Ref.current], { opacity: 0, y: 24 });
+      // 중 두 문장이 겹쳐 잠깐 보이는 현상이 완전히 사라진다.
+      gsap.set(sentence2Ref.current, { opacity: 0, y: 24 });
 
       const tl = gsap.timeline({
         scrollTrigger: {
@@ -78,18 +77,15 @@ export function HeroScrollytelling({ ctaPrimary, ctaSecondary, riskReversalItems
         },
       });
 
-      // 문장 1 → 흐려지며 위로 이동(완전히 사라지지 않음), 동시에 문장 2 등장
-      tl.to(sentence1Ref.current, { opacity: DIM_OPACITY, y: -24, duration: 1 }, 0.6)
-        .to(sentence2Ref.current, { opacity: 1, y: 0, duration: 1 }, 0.6)
+      // 문장 1(문제 제기) → 흐려지며 위로 이동(완전히 사라지지 않음), 동시에 문장 2(해결책) 등장
+      tl.to(sentence1Ref.current, { opacity: DIM_OPACITY, y: -24, duration: 1 }, 0.5)
+        .to(sentence2Ref.current, { opacity: 1, y: 0, duration: 1 }, 0.5)
         // Scroll Indicator: 문장 1이 보이는 동안은 유지하고, 문장 2가 등장하기
-        // 시작하는 시점(0.6)부터 함께 자연스럽게 사라진다 (요구사항 5)
-        .to(indicatorRef.current, { opacity: 0, duration: 1 }, 0.6)
-        // 문장 2 → 흐려짐, 문장 3 등장
-        .to(sentence2Ref.current, { opacity: DIM_OPACITY, y: -24, duration: 1 }, 2.1)
-        .to(sentence3Ref.current, { opacity: 1, y: 0, duration: 1 }, 2.1)
-        // Hero 종료 준비: 배경 글로우를 은은하게 낮춰 다음 About 섹션으로의 전환이
+        // 시작하는 시점(0.5)부터 함께 자연스럽게 사라진다 (요구사항 5)
+        .to(indicatorRef.current, { opacity: 0, duration: 1 }, 0.5)
+        // Hero 종료 준비: 배경 글로우를 은은하게 낮춰 다음 섹션으로의 전환이
         // 갑작스럽지 않고 "마무리되는" 느낌을 준다 (요구사항 8)
-        .to(glowRef.current, { opacity: 0.4, duration: 1 }, 2.1);
+        .to(glowRef.current, { opacity: 0.4, duration: 1 }, 0.5);
     }, wrapperRef);
 
     return () => ctx.revert();
@@ -137,34 +133,28 @@ export function HeroScrollytelling({ ctaPrimary, ctaSecondary, riskReversalItems
                 감싸 정상적인 단락 줄바꿈(그리고 text-balance)이 적용되게 했다. */}
             <div className="relative min-h-[2.6em] w-full">
               <div ref={sentence1Ref} className="absolute inset-0 flex items-center justify-center">
-                <Heading size="display" className="text-center text-balance">
-                  단순히{" "}
-                  <span className="text-brand-accent whitespace-nowrap">&apos;예쁜&apos;</span> 홈페이지
-                  제작을 찾으시나요?
+                {/* text-h1(모바일)/sm:text-display: display 크기(clamp 최소 40px)로는 이 문장이
+                    375px 폭에서 의도한 2줄이 아니라 4줄로 깨진다(2026-08-14 실측) — 모바일에서만
+                    한 단계 작은 h1 크기로 줄여 의도한 줄바꿈(<br/>)이 유지되게 한다. */}
+                <Heading size="display" className="text-center text-balance text-h1 sm:text-display">
+                  혹시, 홈페이지는 있는데
+                  <br />
+                  <span className="text-brand-accent whitespace-nowrap">문의는 오지</span> 않으시나요?
                 </Heading>
               </div>
 
               {/* opacity-0: 서버 렌더 HTML 자체에 이미 숨김 상태를 포함시켜, 하이드레이션 전
-                  (JS가 아직 gsap.set()을 실행하기 전) 잠깐이라도 문장 1과 겹쳐 보이지 않게 한다. */}
+                  (JS가 아직 gsap.set()을 실행하기 전) 잠깐이라도 문장 1과 겹쳐 보이지 않게 한다.
+                  문장 1(문제 제기)보다 낮은 시각적 위계(h2 + secondary 컬러)로 "해결책" 답변임을
+                  드러낸다 — HeroStatic과 동일한 위계 원칙. */}
               <div
                 ref={sentence2Ref}
                 className="absolute inset-0 flex items-center justify-center opacity-0"
               >
-                <Heading as="p" size="display" className="text-center text-balance">
-                  그렇다면 죄송하지만,
-                  <br />
-                  다른 홈페이지 제작 업체를 추천드립니다.
-                </Heading>
-              </div>
-
-              <div
-                ref={sentence3Ref}
-                className="absolute inset-0 flex items-center justify-center opacity-0"
-              >
-                <Heading as="p" size="display" className="text-center text-balance">
-                  예쁘기만 한 홈페이지는
-                  <br />
-                  매출을 만들지 않기 때문입니다.
+                <Heading as="p" size="h2" className="text-center text-balance text-brand-text-secondary">
+                  우리는 방문자가 <span className="text-brand-accent">신뢰</span>하고,{" "}
+                  <span className="text-brand-accent">문의</span> 버튼을 누르게 만드는 홈페이지를
+                  설계합니다.
                 </Heading>
               </div>
             </div>

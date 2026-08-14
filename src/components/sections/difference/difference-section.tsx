@@ -75,8 +75,8 @@ export function DifferenceSection({ pillars, checklist, comparisonRows }: Differ
   }, [prefersReducedMotion]);
 
   return (
-    // background="base" — Bridge가 Trust 통계 스트립을 흡수하며 elevated 톤을 이어받았으므로,
-    // Hero→Bridge(elevated)→Difference(base)→Services(elevated)... 교차 리듬을 유지한다.
+    // background="base" — 앞의 Urgency(elevated)와 대비를 이루고, 뒤의
+    // Services(elevated)로 다시 넘어가며 base/elevated 교차 리듬을 유지한다.
     <Section id="difference" background="base">
       <Container className="flex flex-col items-center gap-12">
         <div ref={headingRef} className="w-full">

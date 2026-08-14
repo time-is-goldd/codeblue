@@ -1,6 +1,5 @@
 import { HeroSection } from "@/components/sections/hero";
 import { CapacityBadgeSection } from "@/components/sections/capacity/capacity-badge-section";
-import { BridgeSection } from "@/components/sections/bridge";
 import { UrgencySection } from "@/components/sections/urgency/urgency-section";
 import { DifferenceSection } from "@/components/sections/difference";
 import { ServicesSection } from "@/components/sections/services/services-section";
@@ -9,7 +8,6 @@ import { PricingSection } from "@/components/sections/pricing/pricing-section";
 import { ReviewSection } from "@/components/sections/review";
 import { FaqSection } from "@/components/sections/faq";
 import { ContactSection } from "@/components/sections/contact";
-import { getAllTrustMetrics } from "@/lib/repositories/trust-metric.repository";
 import {
   getAllAssuranceChecklist,
   getAllComparisonTableRows,
@@ -26,22 +24,23 @@ import { contactPageJsonLd, faqPageJsonLd, professionalServiceJsonLd, serviceJso
 import { JsonLd } from "@/components/seo/json-ld";
 
 /**
- * CRO 재설계(2026-07-23)로 Services/Portfolio/Pricing 3개 섹션이 추가되고, Trust가
- * Bridge에 통합되며 전체 순서가 다음과 같이 바뀌었다: Hero → CapacityBadge → Bridge
- * (+통계 스트립) → Urgency → Difference → Services → Portfolio → Pricing → Review →
- * Faq → Contact.
+ * CRO 재설계(2026-07-23)로 Services/Portfolio/Pricing 3개 섹션이 추가되며 전체 순서가
+ * 다음과 같이 바뀌었다: Hero → CapacityBadge → Urgency → Difference → Services →
+ * Portfolio → Pricing → Review → Faq → Contact.
  *
- * CapacityBadge(Hero 직후)와 Urgency(Bridge~Difference 사이)는 3차 CRO 추가분이다.
+ * CapacityBadge(Hero 직후)와 Urgency(Hero~Difference 사이)는 3차 CRO 추가분이다.
  * CapacityBadge는 "대표 1인이 상담부터 제작까지 직접 진행하기 때문에 동시 진행 가능한
  * 프로젝트 수가 자연스럽게 제한된다"는 사실 기반 희소성만 전달하고, 거짓 희소성("이번 달
  * O팀 한정")은 쓰지 않는다. Urgency는 감정 흐름(관심→공감→문제인식→위기감→해결책→
- * 신뢰→문의)에서 비어 있던 "위기감" 단계를 메운다 — Bridge가 문제를 언어화한 직후,
- * Difference의 "그래서 우리는 다릅니다"로 넘어가기 전에 짧게 위기감을 짚는다.
+ * 신뢰→문의)에서 비어 있던 "위기감" 단계를 메운다 — Hero가 문제 제기와 해결책 포지셔닝을
+ * 마친 직후, Difference의 "그래서 우리는 다릅니다"로 넘어가기 전에 짧게 위기감을 짚는다.
  *
- * Trust는 더 이상 독립 섹션이 아니다 — 카드 3개(제목+숫자+설명+진행바+출처+아코디언)의
- * 텍스트 밀도가 너무 높아 숫자 자체의 임팩트가 약하다는 판단에 따라, 숫자만 남긴 한 줄
- * 스트립(`TrustMetricStrip`)으로 축소해 BridgeSection 하단에 합쳤다. 데이터(`TrustMetric`,
- * `getAllTrustMetrics`)는 그대로 재사용하고 Props로 `BridgeSection`에 전달한다.
+ * 콘텐츠 정리(2026-08-14): 기존에 Hero 다음 위치했던 Bridge 섹션("혹시 문의가 안
+ * 오시나요?" + 통계 스트립)을 제거했다 — Hero 스크롤텔링(HeroScrollytelling/HeroStatic)이
+ * "혹시, 홈페이지는 있는데 문의는 오지 않으시나요?" → "우리는 방문자가 신뢰하고, 문의
+ * 버튼을 누르게 만드는 홈페이지를 설계합니다."라는 동일한 문제 제기→해결책 메시지를
+ * 이미 전달하고 있어, Bridge는 같은 내용을 페이지 하단에서 한 번 더 반복하는 중복
+ * 블록이었다. 통계 스트립(TrustMetric 데이터/컴포넌트)도 이 섹션 전용이라 함께 제거했다.
  *
  * Services(Phase 7.5)/Portfolio(Phase 8)는 DEVELOPMENT_PLAN.md 원안에 있었으나 이번
  * 재설계 전까지 미구현이었다("그래서 구체적으로 무엇을 만들어주는가"라는 공백을 메운다).
@@ -58,14 +57,13 @@ import { JsonLd } from "@/components/seo/json-ld";
  * Hero CTA(`hero-primary`/`hero-secondary`)는 별도 라우트(`/contact`, `/portfolio`) 대신
  * 홈 내 앵커(`#contact`, `#portfolio`)로 연결된다 — `cta.data.ts` 참조.
  *
- * Bridge는 `#difference`보다 앞에 위치하므로, Header/FloatingCTA의 Hero 영역 판정
- * (LayoutScrollProvider가 `#difference`의 문서상 위치를 기준으로 계산)이 이 구간까지
- * 자동으로 포함해 확장된다.
+ * CapacityBadge/Urgency는 `#difference`보다 앞에 위치하므로, Header/FloatingCTA의
+ * Hero 영역 판정(LayoutScrollProvider가 `#difference`의 문서상 위치를 기준으로 계산)이
+ * 이 구간까지 자동으로 포함해 확장된다.
  *
- * background 교차 리듬: CapacityBadge(base, Hero 연장선) → Bridge(elevated, Trust 통합으로
- * 톤을 이어받음) → Urgency(base) → Difference(base, Urgency와 같은 톤을 공유해 "위기감→
- * 해결책"이 한 흐름으로 읽히게 함) → Services(elevated) → Portfolio(base) →
- * Pricing(elevated) → Review(base) → FAQ(elevated) → Contact(base).
+ * background 교차 리듬: CapacityBadge(base, Hero 연장선) → Urgency(elevated, Bridge 제거로
+ * 이 자리가 넘겨받은 시각적 브레이크) → Difference(base) → Services(elevated) →
+ * Portfolio(base) → Pricing(elevated) → Review(base) → FAQ(elevated) → Contact(base).
  *
  * Hero의 H1이 사이트 전체에서 유일한 H1이다. 나머지 섹션은 모두 H2(각 섹션 SectionHeading
  * 참조), Faq의 개별 질문은 Accordion, Contact의 왼쪽 컬럼 헤딩은 H3.
@@ -86,7 +84,6 @@ import { JsonLd } from "@/components/seo/json-ld";
 export default async function HomePage() {
   const heroCtaPrimary = await getCtaBySlot("hero-primary");
   const heroCtaSecondary = await getCtaBySlot("hero-secondary");
-  const trustMetrics = await getAllTrustMetrics();
   const differentiatorPillars = await getAllDifferentiatorPillars();
   const assuranceChecklist = await getAllAssuranceChecklist();
   const comparisonTableRows = await getAllComparisonTableRows();
@@ -114,7 +111,6 @@ export default async function HomePage() {
         riskReversalItems={assuranceChecklist.slice(0, 3)}
       />
       <CapacityBadgeSection />
-      <BridgeSection metrics={trustMetrics} />
       <UrgencySection />
       <DifferenceSection
         pillars={differentiatorPillars}

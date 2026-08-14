@@ -66,17 +66,9 @@ export const PRICING_VALUE_PROOF_DATA: PricingValueProofItem[] = [
     updatedAt: "2026-07-23T00:00:00.000Z",
   },
   {
-    id: "pvp-003",
-    label: "AI와 자동화를 적극 활용하여 제작 시간을 줄였습니다.",
-    order: 3,
-    isPublished: true,
-    createdAt: "2026-07-23T00:00:00.000Z",
-    updatedAt: "2026-07-23T00:00:00.000Z",
-  },
-  {
     id: "pvp-004",
     label: "필요한 기능만 제안하여 불필요한 비용을 줄였습니다.",
-    order: 4,
+    order: 3,
     isPublished: true,
     createdAt: "2026-07-23T00:00:00.000Z",
     updatedAt: "2026-07-23T00:00:00.000Z",

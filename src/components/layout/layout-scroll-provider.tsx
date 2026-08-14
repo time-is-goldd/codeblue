@@ -33,7 +33,7 @@ export interface LayoutScrollContextValue {
 const LayoutScrollContext = createContext<LayoutScrollContextValue | null>(null);
 
 /**
- * "Hero Zone"(Hero+Bridge+Trust) 바로 다음에 오는 첫 실제 콘텐츠 섹션 id — 이 섹션의
+ * "Hero Zone"(Hero+CapacityBadge+Urgency) 바로 다음에 오는 첫 실제 콘텐츠 섹션 id — 이 섹션의
  * 문서상 위치를 기준으로 Header 투명/Glass 전환, FloatingCTA 노출 여부를 계산한다.
  * 2026-07-22: 이 자리에 있던 `id="about"` 홈 자리표시자를 제거하면서 `id="difference"`가
  * 새로 이 경계를 넘겨받았다(Trust 바로 다음이라는 상대적 위치는 동일하게 유지됨).

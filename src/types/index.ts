@@ -4,6 +4,5 @@ export * from "./faq";
 export * from "./service";
 export * from "./contact";
 export * from "./cta";
-export * from "./trust-metric";
 export * from "./difference";
 export * from "./pricing";

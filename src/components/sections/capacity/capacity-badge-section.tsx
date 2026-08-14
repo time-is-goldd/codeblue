@@ -23,8 +23,9 @@ const EASE_OUT = "power2.out";
  * "이번 달 O팀 한정"처럼 사실이 아닌 희소성은 절대 사용하지 않는다 — 실제 운영 방식
  * (대표 1인 책임제)에서 자연스럽게 나오는 진짜 희소성만 전달한다.
  *
- * Hero(bg-background)와 Bridge(bg-brand-bg-elevated) 사이의 시각적 완충 역할도 겸하므로
- * background="base"로 Hero와 톤을 그대로 이어받는다. Section의 기본 패딩(py-16~32)은
+ * Hero(bg-background)의 연장선 역할도 겸하므로 background="base"로 Hero와 톤을 그대로
+ * 이어받는다 — 다음 Urgency 섹션(background="elevated")에서 시각적 브레이크가 생긴다.
+ * Section의 기본 패딩(py-16~32)은
  * "작은 배지"라는 요청에 비해 과해서 py-10~14로 줄이고, 무거운 SectionHeading 대신
  * 카드 하나만 담아 Hero의 연장선처럼 가볍게 지나가도록 했다.
  *

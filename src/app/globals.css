@@ -62,9 +62,10 @@
     min-height: 100vh;
   }
 
-  /* HeroScrollytelling의 스크롤 여유 구간(300vh) 전용 — 값만 다를 뿐 위와 동일한 폴백 원칙. */
+  /* HeroScrollytelling의 스크롤 여유 구간(200vh) 전용 — 값만 다를 뿐 위와 동일한 폴백 원칙.
+     문장이 3개→2개로 줄면서(문제 제기 → 해결책) 여유 구간도 300vh에서 200vh로 함께 줄였다. */
   .h-scroll-runway-safe {
-    height: 300vh;
+    height: 200vh;
   }
 
   @supports (height: 100dvh) {
@@ -77,7 +78,7 @@
     }
 
     .h-scroll-runway-safe {
-      height: 300dvh;
+      height: 200dvh;
     }
   }
 }
