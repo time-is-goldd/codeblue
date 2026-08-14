@@ -21,6 +21,11 @@ const EASE_OUT = "power2.out";
  * "사회적 증거(Social Proof)"로 신뢰를 강화하는 고객 후기 섹션 —
  * DEVELOPMENT_PLAN.md Phase 7A(Foundation) + 7B(Animation), WIREFRAME.md 2.8.
  *
+ * 메인 콘텐츠 재배치(2026-08-14): Portfolio 바로 다음, Urgency 바로 앞으로 이동했다 —
+ * 방문자가 실제 제작 사례(Portfolio)를 본 직후 곧바로 "다른 고객들도 만족했다"는
+ * 사회적 증거를 이어붙여 신뢰를 강화한다. background는 기본값(base)을 그대로 유지한다
+ * (Portfolio가 elevated로 바뀌어 Review와 자연히 교차된다).
+ *
  * 레이아웃/데이터 구조/SSR HTML/Heading 구조는 7A와 완전히 동일하게 유지하며, 이 컴포넌트가
  * 직접 담당하는 애니메이션은 Section Heading의 Fade In(요청사항 ①) 하나뿐이다 — Card/별점/Hover는
  * ReviewCard가 자기 완결적으로 처리한다(Trust EvidenceCard·Difference ComparisonCard와 동일한

@@ -26,11 +26,15 @@ const EASE_OUT = "power2.out";
  * Pricing 섹션 — CRO 재설계(2026-07-23) 신설. DEVELOPMENT_PLAN.md 원안에는 없던 섹션으로,
  * 가격 완전 비공개로 인한 문의 이탈("일단 문의"의 심리적 장벽)을 막기 위해 추가되었다.
  *
- * 배치: Portfolio(실물 증거) 바로 다음, Review(사회적 증거) 바로 전.
- * - Portfolio 직후: 방금 실제 결과물을 본 상태라 "이 정도 퀄리티가 이 가격"이라는
- *   긍정적 가격 대비 효과(anchoring)가 가장 강하게 작동한다.
- * - Review 직전: 가격 공개로 생기는 일말의 불안을 곧바로 다음 섹션의 실제 후기가
- *   진정시킨다.
+ * 배치: Services(구체적으로 무엇을 만들어주는가) 바로 다음, Faq 바로 전. 방문자가 이미
+ * Hero→Portfolio→Review→Urgency→Difference→Services를 거치며 신뢰와 관심을 충분히
+ * 쌓은 뒤 가격을 마주하게 된다(2026-08-14 메인 콘텐츠 재배치로 Portfolio/Review가 Hero
+ * 직후로 이동하면서, 이전에 있던 "Portfolio 직후·Review 직전" 배치는 더 이상 유효하지
+ * 않다 — 대신 Portfolio/Review가 이미 최상단에서 실물 증거·사회적 증거를 보여준 뒤라
+ * 가격에 대한 신뢰 기반은 이미 마련된 상태로 이 섹션에 도달한다).
+ *
+ * background="base" — 원래는 elevated였으나 Services(elevated) 바로 다음이 되며 2연속
+ * elevated가 되는 것을 피하려고 base로 바꿨다(2026-08-14).
  *
  * `pricing-section-bottom` CTA("제 상황에 맞는 플랜 추천받기")가 이 섹션의 핵심 전환
  * 지점이다 — 3티어 중 하나를 스스로 고르게 하는 대신 상담으로 안내해 결정 피로를
@@ -66,7 +70,7 @@ export function PricingSection({ tiers, valueProofItems, cta }: PricingSectionPr
   }, [prefersReducedMotion]);
 
   return (
-    <Section id="pricing" background="elevated">
+    <Section id="pricing" background="base">
       <Container className="flex flex-col items-center gap-16">
         <div ref={headingRef} className="w-full">
           <SectionHeading

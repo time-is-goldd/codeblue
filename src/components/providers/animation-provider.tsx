@@ -18,7 +18,7 @@ const AnimationContext = createContext<AnimationContextValue>({
 //
 // 이전에는 useEffect 안에서 등록했으나, React는 커밋마다 이펙트를 "자식 → 부모" 순서로
 // 실행한다. AnimationProvider는 모든 Section의 조상(ancestor)이므로 그 useEffect는 항상
-// Hero/CapacityBadge/Urgency/Difference/Review 등 자식들의 useLayoutEffect(심지어 useEffect)보다
+// Hero/Urgency/Difference/Review 등 자식들의 useLayoutEffect(심지어 useEffect)보다
 // 늦게 실행되었고, 그 결과 각 컴포넌트가 등록 전에 `ScrollTrigger.create()`를 호출해
 // "Missing plugin?" 경고와 크래시가 발생했다 — 부모가 자식보다 늦게 실행되는 React
 // 커밋 순서에 등록 시점을 맡긴 것 자체가 근본 원인이다.

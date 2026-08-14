@@ -25,18 +25,20 @@ export function HeroStatic({ ctaPrimary, ctaSecondary, riskReversalItems }: Hero
       />
 
       <Container className="relative flex flex-col items-center gap-8 text-center sm:gap-10">
-        {/* text-h1(모바일)/sm:text-display: display 크기로는 375px 폭에서 의도한 2줄이 아니라
-            4줄로 깨진다(2026-08-14 실측) — 모바일에서만 한 단계 작은 h1 크기로 줄인다. */}
+        {/* text-h1(모바일)/sm:text-display: display 크기로는 375px 폭에서 의도한 줄바꿈이 아니라
+            훨씬 더 많은 줄로 깨진다(2026-08-14 실측) — 모바일에서만 한 단계 작은 h1 크기로 줄인다. */}
         <Heading size="display" className="text-balance text-h1 sm:text-display">
-          혹시, 홈페이지는 있는데
+          혹시,
+          <br />
+          홈페이지는 있는데
           <br />
           <span className="text-brand-accent whitespace-nowrap">문의는 오지</span> 않으시나요?
         </Heading>
 
         <Heading as="p" size="h2" className="text-balance text-brand-text-secondary">
-          우리는 방문자가 <span className="text-brand-accent">신뢰</span>하고,{" "}
-          <span className="text-brand-accent">문의</span> 버튼을 누르게 만드는 홈페이지를
-          설계합니다.
+          우리는 방문자가 <span className="text-brand-accent">신뢰</span>하고,
+          <br />
+          문의 버튼을 누르게 만드는 홈페이지를 설계합니다.
         </Heading>
 
         <HeroModelPlaceholder />

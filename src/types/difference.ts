@@ -24,19 +24,3 @@ export interface ComparisonTableRow {
   createdAt: string;
   updatedAt: string;
 }
-
-/**
- * Difference 섹션 상단 3pillar 요약 카드(후불제/노템플릿/전환설계) — CRO 재설계(2026-07-23) 신설.
- * "그래서 코드블루는 이렇게 다릅니다"의 즉시 근거 역할. 아래 Block 1(후불제 상세)/
- * Block 2(템플릿 상세)/비교표는 이 카드들의 상세 증거로 이어진다.
- */
-export interface DifferentiatorPillar {
-  id: string;
-  title: string;
-  description: string;
-  icon?: string;
-  order: number;
-  isPublished: boolean;
-  createdAt: string;
-  updatedAt: string;
-}

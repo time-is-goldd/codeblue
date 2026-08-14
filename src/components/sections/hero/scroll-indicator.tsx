@@ -9,8 +9,10 @@ export interface ScrollIndicatorProps {
   className?: string;
 }
 
-/** Hero 바로 다음 섹션(CapacityBadge)의 id — page.tsx의 실제 섹션 순서와 반드시 일치해야 한다. */
-const NEXT_SECTION_ID = "capacity";
+/** Hero 바로 다음 섹션(Portfolio)의 id — page.tsx의 실제 섹션 순서와 반드시 일치해야
+ *  한다. 메인 콘텐츠 재배치(2026-08-14)로 Portfolio/Review가 Hero 바로 다음으로
+ *  이동하면서 Portfolio가 Hero 바로 다음 섹션이 됐다. */
+const NEXT_SECTION_ID = "portfolio";
 
 /**
  * Hero 하단 스크롤 유도 UI — DEVELOPMENT_PLAN.md Phase 4A.

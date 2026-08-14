@@ -40,6 +40,7 @@ export function HeroScrollytelling({ ctaPrimary, ctaSecondary, riskReversalItems
   // <div> wrapper를 가리킨다 — 타입도 함께 HTMLDivElement로 맞춘다.
   const sentence1Ref = useRef<HTMLDivElement>(null);
   const sentence2Ref = useRef<HTMLDivElement>(null);
+  const stageRef = useRef<HTMLDivElement>(null);
   const indicatorRef = useRef<HTMLDivElement>(null);
   const glowRef = useRef<HTMLDivElement>(null);
 
@@ -51,8 +52,44 @@ export function HeroScrollytelling({ ctaPrimary, ctaSecondary, riskReversalItems
 
   useLayoutEffect(() => {
     if (!wrapperRef.current) return;
+    const s1 = sentence1Ref.current;
+    const s2 = sentence2Ref.current;
+    const stage = stageRef.current;
+    if (!s1 || !s2 || !stage) return;
 
     const ctx = gsap.context(() => {
+      // 모바일 텍스트 겹침 버그(2026-08-14) 근본 원인: 두 문장이 같은 좌표에 절대 위치로
+      // 겹쳐 있는 상태에서, 문장 1의 퇴장 오프셋이 고정 -24px였다 — 문장 1(문제 제기, 이제
+      // 3줄)과 문장 2(해결책)가 데스크톱 넓은 폭에서는 우연히 서로 안 겹칠 만큼 짧게
+      // 보였지만, 모바일처럼 줄바꿈이 많아져 텍스트 블록이 세로로 길어지는 환경에서는
+      // -24px로는 전혀 벗어나지 못해 두 텍스트가 그대로 포개졌다. 폰트 크기를 더 줄이는
+      // 대신, 실제 렌더된 높이를 측정해 "문장 1이 자기 높이만큼 완전히 위로 벗어나야
+      // 문장 2와 절대 겹치지 않는다"는 조건을 항상 만족시키도록 오프셋을 계산한다 —
+      // 어떤 뷰포트/줄 수에서도 구조적으로 겹칠 수 없다.
+      //
+      // 주의: s1/s2(sentence1Ref/sentence2Ref)는 `absolute inset-0`로 스테이지 전체를
+      // 꽉 채우도록 늘어난 wrapper <div>다 — 이 wrapper 자신의 offsetHeight는 실제 텍스트
+      // 높이가 아니라 항상 스테이지 높이와 같다(실측 시도 중 발견한 버그: 이 값을 그대로
+      // 쓰면 exitDistance가 텍스트 실제 높이가 아니라 스테이지의 기존 폴백 높이를 기준으로
+      // 계산되어 여전히 부족했다). 반드시 그 안의 실제 텍스트 요소(Heading이 렌더링한
+      // h1/p)를 querySelector로 찾아 측정해야 한다.
+      const s1Text = s1.querySelector("h1, p") as HTMLElement | null;
+      const s2Text = s2.querySelector("h1, p") as HTMLElement | null;
+      const s1Height = s1Text?.offsetHeight ?? s1.offsetHeight;
+      const s2Height = s2Text?.offsetHeight ?? s2.offsetHeight;
+      // 두 문장 모두 스테이지 중앙(C)에 겹쳐 있다 — 문장 1을 위로 옮긴 만큼(exitDistance)
+      // 그 아래쪽 경계(C + h1/2 - exitDistance)가 문장 2의 위쪽 경계(C - h2/2)보다 높이
+      // 있어야 절대 겹치지 않는다 → exitDistance ≥ (h1+h2)/2. h1만 기준으로 삼으면 문장 2가
+      // 더 길 때(예: 모바일에서 해결책 문장이 더 많이 줄바꿈될 때) 부족할 수 있어 h1/h2
+      // 평균을 쓴다.
+      const exitDistance = (s1Height + s2Height) / 2 + 16;
+
+      // 스테이지 높이: 기존 `min-h-[2.6em]`은 이 div 자신이 상속한(훨씬 작은) 기본 본문
+      // 폰트 크기를 기준으로 계산되어 실제 콘텐츠(Heading의 훨씬 큰 폰트)와 무관한 값이었다
+      // — 두 문장 중 더 큰 실측 높이에 맞춰 반응형으로 다시 예약해, 아래 HeroModelPlaceholder/
+      // CTA가 항상 일관된 간격을 두고 배치되게 한다.
+      stage.style.minHeight = `${Math.max(s1Height, s2Height)}px`;
+
       // 초기 숨김 상태는 스크롤에 의해 지연 렌더링되는 scrub 타임라인 내부의 `.set()`이 아니라,
       // 독립적으로 즉시 실행되는 gsap.set()으로 적용한다 — Trust/Difference/Review가 진입 애니메이션
       // 전 상태를 항상 `gsap.set()`으로 먼저 고정하는 것과 동일한 원칙(DEVELOPMENT_PLAN.md Phase
@@ -66,7 +103,7 @@ export function HeroScrollytelling({ ctaPrimary, ctaSecondary, riskReversalItems
       // 페인트된 시점 ~ JS가 실행되는 시점 사이)의 깜빡임까지는 못 막으므로, 문장 2의 JSX
       // 자체에도 `opacity-0` 클래스를 기본값으로 둔다(아래) — 두 안전장치를 합쳐야 최초 로딩
       // 중 두 문장이 겹쳐 잠깐 보이는 현상이 완전히 사라진다.
-      gsap.set(sentence2Ref.current, { opacity: 0, y: 24 });
+      gsap.set(s2, { opacity: 0, y: 24 });
 
       const tl = gsap.timeline({
         scrollTrigger: {
@@ -77,15 +114,26 @@ export function HeroScrollytelling({ ctaPrimary, ctaSecondary, riskReversalItems
         },
       });
 
-      // 문장 1(문제 제기) → 흐려지며 위로 이동(완전히 사라지지 않음), 동시에 문장 2(해결책) 등장
-      tl.to(sentence1Ref.current, { opacity: DIM_OPACITY, y: -24, duration: 1 }, 0.5)
-        .to(sentence2Ref.current, { opacity: 1, y: 0, duration: 1 }, 0.5)
-        // Scroll Indicator: 문장 1이 보이는 동안은 유지하고, 문장 2가 등장하기
+      const EXIT_DURATION = 0.6;
+      const ENTER_START = 0.5 + EXIT_DURATION; // 문장 1의 퇴장 트윈이 "완전히 끝난 뒤" 시작
+
+      // 문장 1(문제 제기) → 흐려지며 자기 높이만큼 위로 완전히 벗어남(겹침 공간적으로 방지).
+      // 겹침은 공간(위치)뿐 아니라 시간(타이밍)에서도 생길 수 있다 — 이전 버전은 문장 2
+      // 진입을 문장 1 퇴장보다 0.15만 늦게 시작해, 두 트윈이 동시에 진행되는 구간(둘 다
+      // 중간 불투명도로 겹쳐 보이는 구간)이 그대로 남아 있었다(2026-08-14 실측 재현 —
+      // Desktop에서도 크로스페이드 중간 지점에 두 문장이 겹치는 프레임 확인). 문장 2 진입을
+      // 문장 1 퇴장이 "완전히 끝나는 시점"(ENTER_START)부터 시작시켜 두 트윈의 활성 구간이
+      // 시간상 아예 겹치지 않게 한다 — 문장 1이 다 빠져나가 정지한 뒤에야 문장 2가
+      // 나타나므로, 어떤 스크롤 위치에서도 두 문장이 동시에 눈에 띄는 불투명도로 겹치는
+      // 순간 자체가 없다.
+      tl.to(s1, { opacity: DIM_OPACITY, y: -exitDistance, duration: EXIT_DURATION }, 0.5)
+        .to(s2, { opacity: 1, y: 0, duration: EXIT_DURATION }, ENTER_START)
+        // Scroll Indicator: 문장 1이 보이는 동안은 유지하고, 문장 1이 빠져나가기
         // 시작하는 시점(0.5)부터 함께 자연스럽게 사라진다 (요구사항 5)
-        .to(indicatorRef.current, { opacity: 0, duration: 1 }, 0.5)
+        .to(indicatorRef.current, { opacity: 0, duration: EXIT_DURATION }, 0.5)
         // Hero 종료 준비: 배경 글로우를 은은하게 낮춰 다음 섹션으로의 전환이
         // 갑작스럽지 않고 "마무리되는" 느낌을 준다 (요구사항 8)
-        .to(glowRef.current, { opacity: 0.4, duration: 1 }, 0.5);
+        .to(glowRef.current, { opacity: 0.4, duration: EXIT_DURATION }, ENTER_START);
     }, wrapperRef);
 
     return () => ctx.revert();
@@ -119,7 +167,8 @@ export function HeroScrollytelling({ ctaPrimary, ctaSecondary, riskReversalItems
               리스크 리버설 캡션)이 추가되면서, 이 컨테이너는 `overflow-hidden`인 h-screen sticky
               박스 안에 있어 세로 여백을 아낄수록 저사양/짧은 뷰포트에서 잘림 위험이 줄어든다. */}
           <Container className="relative flex flex-col items-center gap-8 text-center sm:gap-10">
-            {/* 3문장이 같은 자리에 겹쳐 표시되는 스테이지 — 높이를 고정해 레이아웃이 흔들리지 않는다.
+            {/* 2문장이 같은 자리에 겹쳐 표시되는 스테이지 — 실제 렌더 높이를 측정해(useLayoutEffect)
+                레이아웃이 흔들리지 않게 예약한다(JS 이전 SSR 폴백은 아래 className의 반응형 min-h).
                 모바일 레이아웃 버그 수정(2026-07-25): 예전에는 `flex items-center justify-center`를
                 Heading(텍스트를 직접 담는 요소) 자신에게 걸었다 — `display:flex`가 걸린 요소의
                 "텍스트 노드 + <span>이 섞인 자식"은 CSS상 각각 독립된 익명 flex item으로
@@ -131,13 +180,15 @@ export function HeroScrollytelling({ ctaPrimary, ctaSecondary, riskReversalItems
                 않는다 — 대신 `flex`(절대 위치+중앙 정렬)를 텍스트가 없는 별도 wrapper로
                 옮기고, 실제 텍스트는 flex가 걸리지 않은 일반 블록 요소(Heading) 하나로만
                 감싸 정상적인 단락 줄바꿈(그리고 text-balance)이 적용되게 했다. */}
-            <div className="relative min-h-[2.6em] w-full">
+            <div ref={stageRef} className="relative min-h-[8rem] w-full sm:min-h-[7rem] md:min-h-[6.5rem]">
               <div ref={sentence1Ref} className="absolute inset-0 flex items-center justify-center">
                 {/* text-h1(모바일)/sm:text-display: display 크기(clamp 최소 40px)로는 이 문장이
-                    375px 폭에서 의도한 2줄이 아니라 4줄로 깨진다(2026-08-14 실측) — 모바일에서만
-                    한 단계 작은 h1 크기로 줄여 의도한 줄바꿈(<br/>)이 유지되게 한다. */}
+                    375px 폭에서 의도한 줄바꿈이 아니라 훨씬 더 많은 줄로 깨진다(2026-08-14 실측)
+                    — 모바일에서만 한 단계 작은 h1 크기로 줄여 의도한 줄바꿈(<br/>)이 유지되게 한다. */}
                 <Heading size="display" className="text-center text-balance text-h1 sm:text-display">
-                  혹시, 홈페이지는 있는데
+                  혹시,
+                  <br />
+                  홈페이지는 있는데
                   <br />
                   <span className="text-brand-accent whitespace-nowrap">문의는 오지</span> 않으시나요?
                 </Heading>
@@ -152,9 +203,9 @@ export function HeroScrollytelling({ ctaPrimary, ctaSecondary, riskReversalItems
                 className="absolute inset-0 flex items-center justify-center opacity-0"
               >
                 <Heading as="p" size="h2" className="text-center text-balance text-brand-text-secondary">
-                  우리는 방문자가 <span className="text-brand-accent">신뢰</span>하고,{" "}
-                  <span className="text-brand-accent">문의</span> 버튼을 누르게 만드는 홈페이지를
-                  설계합니다.
+                  우리는 방문자가 <span className="text-brand-accent">신뢰</span>하고,
+                  <br />
+                  문의 버튼을 누르게 만드는 홈페이지를 설계합니다.
                 </Heading>
               </div>
             </div>

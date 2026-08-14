@@ -33,12 +33,21 @@ export interface LayoutScrollContextValue {
 const LayoutScrollContext = createContext<LayoutScrollContextValue | null>(null);
 
 /**
- * "Hero Zone"(Hero+CapacityBadge+Urgency) 바로 다음에 오는 첫 실제 콘텐츠 섹션 id — 이 섹션의
- * 문서상 위치를 기준으로 Header 투명/Glass 전환, FloatingCTA 노출 여부를 계산한다.
+ * "Hero Zone"(Hero 자신) 바로 다음에 오는 첫 실제 콘텐츠 섹션 id — 이 섹션의 문서상
+ * 위치를 기준으로 Header 투명/Glass 전환, FloatingCTA 노출 여부를 계산한다.
  * 2026-07-22: 이 자리에 있던 `id="about"` 홈 자리표시자를 제거하면서 `id="difference"`가
- * 새로 이 경계를 넘겨받았다(Trust 바로 다음이라는 상대적 위치는 동일하게 유지됨).
+ * 새로 이 경계를 넘겨받았었다.
+ *
+ * 메인 콘텐츠 재배치(2026-08-14): Portfolio/Review가 Hero 바로 다음으로 이동하면서
+ * `#difference`를 그대로 경계로 두면 "Hero Zone"이 Hero+Portfolio+Review+Urgency까지
+ * 부풀어 Header가 계속 투명 상태로 남고 FloatingCTA도 그 구간 내내 숨겨진다 — Portfolio/
+ * Review는 실제 증거를 보여주는 실질적인 콘텐츠 섹션이라 Hero의 연장선으로 취급하는 건
+ * 부적절하다(방문자가 이 섹션들을 훑어보는 동안 전환 동선인 FloatingCTA가 계속 숨어
+ * 있으면 오히려 전환 기회를 놓친다). 그래서 경계를 Hero 바로 다음 섹션인 `#portfolio`로
+ * 옮겼다 — "Hero Zone"이 Hero 자신으로만 좁혀지고, Portfolio부터는 일반 섹션과 동일하게
+ * Header/FloatingCTA가 정상 동작한다.
  */
-const HERO_BOUNDARY_ID = "difference";
+const HERO_BOUNDARY_ID = "portfolio";
 /** 미세한 스크롤 떨림(트랙패드 관성 등)으로 방향이 잘못 뒤집히지 않도록 하는 최소 이동량(px) */
 const DIRECTION_CHANGE_THRESHOLD = 8;
 

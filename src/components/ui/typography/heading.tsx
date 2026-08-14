@@ -5,11 +5,17 @@ import { cn } from "@/lib/utils";
 const headingVariants = cva("text-brand-text-primary", {
   variants: {
     size: {
-      display: "text-display font-bold tracking-[-0.02em]",
-      h1: "text-h1 font-bold tracking-[-0.02em]",
-      h2: "text-h2 font-bold tracking-[-0.02em]",
-      h3: "text-h3 font-semibold",
-      h4: "text-h4 font-semibold",
+      /* leading(line-height) 명시: 이 커스텀 폰트 크기 스케일(tokens.css clamp())에는
+       * 대응하는 line-height 토큰이 없어 브라우저/Tailwind 기본값(대략 1.5)을 그대로
+       * 물려받았다 — 크고 굵은 헤딩엔 지나치게 느슨해 줄 간격이 불필요하게 커지고,
+       * 여러 줄로 꺾이는 텍스트(Hero H1 등)의 총 높이도 그만큼 부풀린다(2026-08-14
+       * Hero 모바일 텍스트 겹침 버그의 원인 중 하나 — 실제 렌더 높이가 커질수록
+       * 겹침 방지에 필요한 오프셋도 커져야 했다). 큰 사이즈일수록 더 타이트하게 좁힌다. */
+      display: "text-display font-bold leading-[1.15] tracking-[-0.02em]",
+      h1: "text-h1 font-bold leading-[1.15] tracking-[-0.02em]",
+      h2: "text-h2 font-bold leading-[1.25] tracking-[-0.02em]",
+      h3: "text-h3 font-semibold leading-snug",
+      h4: "text-h4 font-semibold leading-snug",
     },
   },
   defaultVariants: {

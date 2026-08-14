@@ -79,7 +79,12 @@ export function ResponsiveImage({
       )}
     >
       <motion.div
-        className="size-full"
+        // relative: next/image의 `fill`은 "직접" 부모가 positioned여야 하는데, 이 motion.div가
+        // NextImage의 실제 direct parent다 — 바깥 div에 이미 relative가 있어도 그 grandparent는
+        // 검사 대상이 아니라 여기서도 명시해야 한다. 없으면 개발 모드에서 Next.js가
+        // "parent element with invalid position" 경고를 띄운다(2026-08-14 QA 중 발견 — 이
+        // 컴포넌트를 쓰는 모든 곳에서 재현되는 기존 버그였다).
+        className="relative size-full"
         initial={false}
         animate={hoverEnabled ? "rest" : undefined}
         whileHover={hoverEnabled ? "hover" : undefined}

@@ -21,8 +21,9 @@ const EASE_OUT = "power2.out";
 
 /**
  * Services Overview — DEVELOPMENT_PLAN.md Phase 7.5(원안에는 있었으나 미구현이었다가
- * CRO 재설계 2026-07-23에 실제 구현). Difference(왜 다른가)와 Portfolio(사례) 사이의
- * 공백인 "그래서 구체적으로 무엇을 만들어주는가"를 메운다.
+ * CRO 재설계 2026-07-23에 실제 구현). Difference(왜 다른가) 바로 다음, "그래서 구체적으로
+ * 무엇을 만들어주는가"라는 공백을 메운다. (Portfolio는 2026-08-14 메인 콘텐츠 재배치로
+ * Hero 바로 다음으로 이동해 더 이상 이 섹션과 인접하지 않는다.)
  *
  * 서브페이지(`/services/[slug]`)는 이번 범위에서 보류(2차 확장)하고 홈 미리보기 카드만
  * 구현한다 — Repository(`service.repository.ts`)는 이미 서브페이지 대비 스키마

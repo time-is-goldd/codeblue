@@ -12,10 +12,18 @@ export interface NavItem {
   href: string;
 }
 
+/**
+ * 메인 콘텐츠 재배치(2026-08-14)로 Portfolio/Review가 Hero 바로 다음으로 이동하면서
+ * 항목 순서도 실제 DOM(문서) 순서와 일치하도록 함께 바꿨다 — 순서가 어긋나면 두 가지
+ * 문제가 생긴다: ① 메뉴 클릭 순서와 실제 스크롤 순서가 달라 보여 혼란스럽고, ②
+ * `hooks/use-active-section.ts`가 IntersectionObserver 동점(전환 구간에서 두 섹션이
+ * 동시에 걸리는 경우) 처리 시 이 배열의 순서로 "더 아래(나중) 섹션"을 판정하므로, 실제
+ * DOM 순서와 어긋나면 Active Navigation 하이라이트가 잘못된 섹션을 가리킬 수 있다.
+ */
 export const NAV_ITEMS: NavItem[] = [
-  { label: "Difference", href: "#difference" },
   { label: "Portfolio", href: "#portfolio" },
   { label: "Review", href: "#review" },
+  { label: "Difference", href: "#difference" },
   { label: "FAQ", href: "#faq" },
   { label: "Contact", href: "#contact" },
 ];

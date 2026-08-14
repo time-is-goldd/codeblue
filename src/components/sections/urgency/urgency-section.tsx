@@ -41,18 +41,20 @@ const ITEM_ENTRANCE_DURATION = 0.6;
 const EASE_OUT = "power2.out";
 
 /**
- * CapacityBadge와 Difference 사이의 손실회피(Loss Aversion) 섹션 — CRO 재설계(2026-07-23) 3차 추가.
+ * Portfolio/Review와 Difference 사이의 손실회피(Loss Aversion) 섹션 — CRO 재설계
+ * (2026-07-23) 3차 추가.
  *
  * 목적은 불안감을 과도하게 조성하는 것이 아니라, "지금도 놓치고 있는 기회가 있다"는 점을
- * 짧고 담담하게 인식시키는 것이다. Hero가 "문의가 안 온다"는 문제 제기와 해결책 포지셔닝을
- * 마쳤다면, 이 섹션은 "그 문제를 미루는 동안의 기회비용"을 세 줄로 짚고, 곧바로 다음
- * Difference 섹션의 "그래서 우리는 다릅니다"로 넘어간다 — 감정 흐름(관심→공감→문제인식→
- * 위기감→해결책→신뢰→문의)에서 빠져 있던 "위기감" 단계를 메운다.
+ * 짧고 담담하게 인식시키는 것이다. Hero의 문제 제기·해결책 포지셔닝을 Portfolio(실물
+ * 증거)·Review(사회적 증거)로 뒷받침한 직후, 이 섹션은 "그 문제를 미루는 동안의
+ * 기회비용"을 세 줄로 짚고, 곧바로 다음 Difference 섹션의 "그래서 우리는 다릅니다"로
+ * 넘어간다 — 감정 흐름(관심→공감→문제인식→위기감→해결책→신뢰→문의)에서 빠져 있던
+ * "위기감" 단계를 메운다.
  *
- * background="elevated" — 콘텐츠 정리(2026-08-14)로 앞에 있던 Bridge 섹션이 제거되면서
- * Hero/CapacityBadge(둘 다 base)가 이어지는 구간이 길어졌다. 이 섹션이 Bridge가 맡았던
- * 시각적 브레이크 역할을 대신 넘겨받아 CapacityBadge(base)와 대비를 주고, 뒤의
- * Difference(base)로 넘어가며 다시 톤이 가라앉는 리듬을 유지한다.
+ * background="elevated" — 이 값 자체는 바뀌지 않았다. 메인 콘텐츠 재배치(2026-08-14)로
+ * 이 섹션 앞에 Portfolio(elevated)/Review(base)가 새로 끼어들었지만, Review가 base라
+ * Urgency(elevated)와는 여전히 자연스럽게 교차한다. 뒤의 Difference(base)로 넘어가며
+ * 다시 톤이 가라앉는 리듬도 그대로 유지된다.
  *
  * UI Polish(2026-07-23): 카드 배경/Hover를 사이트 공통 규칙(`GLASS_CARD_CLASS`/
  * `CARD_HOVER_VARIANTS`, `lib/motion-presets.ts`)으로 통일했다.
@@ -136,7 +138,7 @@ export function UrgencySection() {
             align="center"
             title={
               <>
-                홈페이지를 미루는 동안에도
+                홈페이지 제작을 미루는 동안,
                 <br />
                 고객은 <span className="text-brand-accent">경쟁사</span>를 선택하고 있습니다.
               </>

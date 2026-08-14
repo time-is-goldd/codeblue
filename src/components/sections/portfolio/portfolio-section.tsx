@@ -22,9 +22,13 @@ const EASE_OUT = "power2.out";
  * CRO 재설계 2026-07-23에 실제 구현). Hero의 보조 CTA("제작 과정 보러가기")가
  * `#portfolio`로 연결되는 목적지이기도 하다.
  *
- * 실제 결과물(Before→After)로 Difference/Services의 주장을 증거로 전환한다 — 바로 다음
- * Pricing 섹션 직전에 배치해 "이 정도 퀄리티가 이 가격"이라는 앵커링 효과를 노린다.
- * 상세 페이지(`/portfolio/[slug]`)는 2차 확장 범위로 보류.
+ * 메인 콘텐츠 재배치(2026-08-14): Hero 바로 다음, Review 바로 앞으로 이동했다 —
+ * 방문자가 Hero의 후킹 메시지를 본 직후 "그래서 실제로 어떤 홈페이지를 만들었는데?"에
+ * 곧바로 답하도록, 실물 증거(Before→After)를 최상단으로 끌어올린다. 상세 페이지
+ * (`/portfolio/[slug]`)는 2차 확장 범위로 보류.
+ *
+ * background="elevated": Hero(bg-background, base와 동일 톤) 바로 다음 섹션이 되면서
+ * 2연속 base를 피하려고 base→elevated로 바꿨다(이전엔 Services 바로 다음이라 base였다).
  *
  * UI Polish(2026-07-23): 카드가 2열 Grid에서 1열 전체 폭으로 바뀌며 이 컴포넌트는 더
  * 이상 컬럼 그리드가 필요 없다 — 세로로 쌓이는 단순 flex 스택이면 충분하다(카드 내부의
@@ -60,7 +64,7 @@ export function PortfolioSection({ portfolios }: PortfolioSectionProps) {
   }, [prefersReducedMotion]);
 
   return (
-    <Section id="portfolio" background="base">
+    <Section id="portfolio" background="elevated">
       <Container className="flex flex-col items-center gap-16">
         <div ref={headingRef} className="w-full">
           <SectionHeading
