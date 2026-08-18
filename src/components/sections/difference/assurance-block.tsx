@@ -123,7 +123,7 @@ export function AssuranceBlock({ checklist }: AssuranceBlockProps) {
           </Text>
           <span className="inline-block w-fit rounded-lg bg-brand-accent-muted/40 px-4 py-2">
             <Text as="span" weight="semibold" className="text-xl text-brand-accent md:text-2xl">
-              100% 후불제를 도입했습니다.
+              소규모 프로젝트는 선금 없이 진행합니다.
             </Text>
           </span>
         </div>

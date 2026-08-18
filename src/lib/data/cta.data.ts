@@ -17,18 +17,18 @@ export const CTA_DATA: Cta[] = [
   {
     id: "cta-001",
     slot: "hero-primary",
-    buttonLabel: "무료 상담 신청하기",
+    buttonLabel: "무료 상담받기",
     buttonHref: "#contact",
     isActive: true,
-    updatedAt: "2026-07-23T00:00:00.000Z",
+    updatedAt: "2026-08-15T00:00:00.000Z",
   },
   {
     id: "cta-002",
     slot: "hero-secondary",
-    buttonLabel: "제작 과정 보러가기",
+    buttonLabel: "실제 제작 사례 보기",
     buttonHref: "#portfolio",
     isActive: true,
-    updatedAt: "2026-07-23T00:00:00.000Z",
+    updatedAt: "2026-08-15T00:00:00.000Z",
   },
   {
     id: "cta-003",

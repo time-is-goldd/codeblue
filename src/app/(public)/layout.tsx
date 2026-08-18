@@ -2,6 +2,7 @@ import { SkipLink } from "@/components/common";
 import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
 import { FloatingCta } from "@/components/layout/floating-cta";
+import { MobileFixedCta } from "@/components/layout/mobile-fixed-cta";
 import { ScrollProgressBar } from "@/components/layout/scroll-progress-bar";
 import { LayoutScrollProvider } from "@/components/layout/layout-scroll-provider";
 import { HEADER_HEIGHT } from "@/lib/constants/layout";
@@ -26,11 +27,19 @@ export default async function PublicLayout({ children }: { children: React.React
           더 커지므로(header.tsx), 그만큼을 여기서도 함께 더해야 본문 상단이 Header에
           가려지지 않는다. 비노치 기기에서는 env() 값이 0이라 기존과 동일하게 HEADER_HEIGHT만
           적용된다. */}
-      <main id="main-content" style={{ paddingTop: `calc(${HEADER_HEIGHT}px + env(safe-area-inset-top))` }}>
+      {/* 모바일 하단 고정 CTA 바(MobileFixedCta)가 본문 마지막 콘텐츠를 가리지 않도록
+          모바일에서만 하단 여백을 더한다 — 데스크톱은 그 바가 렌더링되지 않으므로 여백도
+          없앤다(md:pb-0). */}
+      <main
+        id="main-content"
+        className="pb-16 md:pb-0"
+        style={{ paddingTop: `calc(${HEADER_HEIGHT}px + env(safe-area-inset-top))` }}
+      >
         {children}
       </main>
       <Footer />
       <FloatingCta />
+      <MobileFixedCta />
     </LayoutScrollProvider>
   );
 }

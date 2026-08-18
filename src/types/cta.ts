@@ -7,7 +7,6 @@ export type CtaSlot =
   | "hero-primary"
   | "hero-secondary"
   | "floating-cta"
-  | "services-page-bottom"
   | "portfolio-page-bottom"
   | "pricing-section-bottom"
   | "faq-page-bottom"

@@ -26,8 +26,13 @@ const CONTACT_SECTION_ID = "contact";
  *
  * 배치: `flex-col`로 세로 스택하고, 가장 눈에 띄어야 할 카카오톡 버튼(요청사항 "가장 눈에
  * 띄게")을 JSX상 마지막에 두어 화면 모서리에 가장 가깝게(스택 맨 아래) 고정한다 — 문의
- * 남기기(보조 행동)는 그 위에 쌓인다. Desktop/Mobile 모두 동일한 세로 스택이라 별도
- * breakpoint 분기가 필요 없다(기존 Floating UI 위치/애니메이션을 그대로 유지).
+ * 남기기(보조 행동)는 그 위에 쌓인다.
+ *
+ * Desktop 전용으로 전환(2026-08-15): 모바일에서는 이 세로 플로팅 스택 대신 화면 하단
+ * 가로형 고정 CTA 바(`MobileFixedCta`)를 사용한다 — 두 UI가 동시에 노출되면 같은 목적의
+ * CTA가 중복되므로, 이 컴포넌트는 `md:flex`로 데스크톱(768px 이상)에서만 보이게 하고
+ * 그 아래에서는 `hidden`으로 완전히 렌더링을 감춘다. 위치/애니메이션 등 데스크톱에서의
+ * 동작 자체는 전혀 바꾸지 않았다.
  */
 export function FloatingCta() {
   const { isInHeroZone, activeSectionId } = useLayoutScroll();
@@ -55,7 +60,7 @@ export function FloatingCta() {
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: prefersReducedMotion ? 0 : 16 }}
           transition={{ duration: prefersReducedMotion ? 0 : 0.25, ease: [0.16, 1, 0.3, 1] }}
-          className="fixed right-4 z-floating-cta flex flex-col items-end gap-2.5 bottom-[calc(1rem+env(safe-area-inset-bottom))] md:right-6 md:bottom-6"
+          className="fixed right-4 z-floating-cta hidden flex-col items-end gap-2.5 bottom-[calc(1rem+env(safe-area-inset-bottom))] md:right-6 md:bottom-6 md:flex"
         >
           <Button
             variant="secondary"

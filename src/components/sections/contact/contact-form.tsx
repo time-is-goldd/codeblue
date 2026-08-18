@@ -1,12 +1,10 @@
 "use client";
 
-import { useLayoutEffect, useRef, useState, type ReactNode } from "react";
+import { useRef, useState, type ReactNode } from "react";
 import Link from "next/link";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { AnimatePresence, motion } from "framer-motion";
-import gsap from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -15,14 +13,20 @@ import { Button } from "@/components/ui/button";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { ErrorMessage } from "@/components/ui/error-message";
 import { SuccessMessage } from "@/components/ui/success-message";
+import { Text } from "@/components/ui/typography/text";
 import { contactFormSchema, type ContactFormValues } from "@/lib/validations/contact.schema";
 import type { SubmitContactActionResult } from "@/lib/actions/contact.actions";
 import { useReducedMotion } from "@/hooks/use-reduced-motion";
 import { trackEvent } from "@/lib/analytics";
+import type { PortfolioPartnerProgram } from "@/types";
 
 export interface ContactFormProps {
   /** Server Action — COMPONENT_GUIDE.md 5.8. 이 컴포넌트는 어떻게 저장/전송되는지 모른다. */
   onSubmitAction: (values: ContactFormValues) => Promise<SubmitContactActionResult>;
+  /** 포트폴리오 협력 프로그램(2026-08-18 신설) — `isActive`일 때만 "안내를 받고 싶습니다"
+   *  선택 항목을 노출한다. Pricing의 협력 카드와 같은 데이터(`getPortfolioPartnerProgram`)를
+   *  공유해 두 영역의 온/오프가 어긋나지 않는다. */
+  portfolioPartnerProgram: PortfolioPartnerProgram | null;
 }
 
 const DEFAULT_VALUES: ContactFormValues = {
@@ -31,17 +35,9 @@ const DEFAULT_VALUES: ContactFormValues = {
   phone: "",
   email: "",
   message: "",
+  portfolioPartnerOptIn: false,
   privacyConsent: false,
 };
-
-const ENTRANCE_DURATION = 0.6;
-const ROW_DURATION = 0.4;
-const ROW_STAGGER = 0.05;
-const EASE_OUT = "power2.out";
-/** 왼쪽 컬럼(ContactSection의 leftTextRef)과 나란히 배치되어 있어 스크롤상 같은 시점에
- *  뷰포트에 들어온다 — "왼쪽 → 오른쪽 순서대로 등장"(요청사항 ①)을 위해 폼 스스로 약간의
- *  지연을 둔다. */
-const SEQUENCE_DELAY = 0.2;
 
 const FIELD_HOVER_TRANSITION = { type: "spring" as const, stiffness: 300, damping: 24 };
 const FIELD_HOVER_STYLE = {
@@ -84,30 +80,33 @@ function FadeMessage({ show, prefersReducedMotion, children }: { show: boolean; 
  *
  * react-hook-form + zod(`contactFormSchema`)로 클라이언트 검증하고, 실제 제출은 Props로 받은
  * `onSubmitAction`(Server Action)에 위임한다 — 이 컴포넌트는 Repository/저장 방식을 모른다.
- * Repository Pattern/Server Action/Validation 구조는 Phase 9A와 완전히 동일하며 이번 Phase는
- * 등장·Hover·Focus·제출/성공 UX만 추가한다.
+ * Repository Pattern/Server Action/Validation 구조는 Phase 9A와 완전히 동일하다.
  *
- * 애니메이션 책임 분리(Trust/Difference/Review/FAQ와 동일한 원칙):
- * - GSAP(useLayoutEffect + gsap.context + ScrollTrigger once): 폼 전체 진입(opacity/y) +
- *   입력 행(label+input+에러 영역을 한 묶음으로 감싼 각 필드 wrapper) 0.05초 stagger. 폼이
- *   직접 렌더링하는 `<form>`의 DOM 자식들을 그대로 순회해 타깃으로 삼는다(FAQ FaqList와 동일
- *   원칙, 별도 ref 배열/데이터 속성 불필요).
- * - Framer Motion: Input/Textarea Hover(border accent + 배경 미세 밝기, spring)만 담당한다.
- *   `motion.create(Input)`으로 Base UI Input의 ref 전달(→ react-hook-form의 `register`)을
- *   그대로 유지한 채 hover 전용 스타일만 얹는다 — 진입 애니메이션(GSAP)과 같은 요소에서
- *   transform이 충돌하지 않도록 GSAP은 필드 wrapper(바깥)에, Hover는 input 자신(안쪽)에 각각
- *   적용한다. 에러 상태인 필드는 accent hover를 비활성화해 에러 테두리가 항상 우선한다.
+ * Contact 전면 단순화(2026-08-16): 폼 전체 진입 + 입력 행 stagger를 담당하던 GSAP
+ * ScrollTrigger 애니메이션을 제거했다 — "핵심 입력 필드는 Contact 영역 진입 즉시 읽고
+ * 조작할 수 있어야 한다"는 요청에 따라, 스크롤로 섹션에 도착한 순간 필드가 fade-in을
+ * 기다리지 않고 바로 보이고 조작 가능해야 한다. Hover(Framer Motion)만 그대로 유지한다:
+ * `motion.create(Input)`으로 Base UI Input의 ref 전달(→ react-hook-form의 `register`)을
+ * 유지한 채 hover 전용 스타일(border accent + 배경 미세 밝기, spring)만 얹는다. 에러
+ * 상태인 필드는 accent hover를 비활성화해 에러 테두리가 항상 우선한다.
  *
- * Focus(요청사항 ⑤)의 "accent border + 부드러운 shadow"는 새 코드가 필요 없다 — Input/
- * Textarea가 Phase 2부터 갖고 있던 `focus-visible:border-ring focus-visible:ring-3
- * focus-visible:ring-ring/50`이 이미 accent 색(`--ring: var(--color-accent)`) 테두리 +
- * box-shadow 링을 그린다. "Error 상태 error border"도 기존 `aria-invalid:border-destructive`가
- * 이미 처리한다 — 이번 Phase가 새로 더한 것은 에러 메시지 자체의 fade(`FadeMessage`)뿐이다.
+ * Focus의 "accent border + 부드러운 shadow"는 새 코드가 필요 없다 — Input/Textarea가
+ * 갖고 있는 `focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50`이
+ * 이미 accent 색(`--ring: var(--color-accent)`) 테두리 + box-shadow 링을 그린다. "Error
+ * 상태 error border"도 기존 `aria-invalid:border-destructive`가 이미 처리한다 — 에러
+ * 메시지 자체의 fade는 `FadeMessage`가 담당한다.
+ *
+ * 포트폴리오 협력 프로그램(2026-08-18 신설): "문의 내용" 다음, "개인정보 동의" 이전에
+ * 선택 항목 하나만 추가한다 — 필수가 아니며 기본값은 미선택이다. Pricing의 "협력 혜택
+ * 문의하기" CTA는 `#contact`로만 연결한다(자동 체크는 적용하지 않는다) — 이 체크박스가
+ * 항상 폼 안에 그대로 보이므로 "이동 후 선택 항목이 보이도록"이라는 요구사항은 추가
+ * 로직 없이 만족되고, URL 파라미터로 자동 선택을 구현하면 `useSearchParams`가 이 홈이
+ * 정적 프리렌더로 남아 있는 구조(`Suspense` 경계 필요)를 건드리게 되어 득보다 위험이 크다고
+ * 판단했다.
  */
-export function ContactForm({ onSubmitAction }: ContactFormProps) {
+export function ContactForm({ onSubmitAction, portfolioPartnerProgram }: ContactFormProps) {
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [submitSuccess, setSubmitSuccess] = useState(false);
-  const formRef = useRef<HTMLFormElement>(null);
   const prefersReducedMotion = useReducedMotion();
 
   const {
@@ -120,41 +119,6 @@ export function ContactForm({ onSubmitAction }: ContactFormProps) {
     resolver: zodResolver(contactFormSchema),
     defaultValues: DEFAULT_VALUES,
   });
-
-  useLayoutEffect(() => {
-    const formEl = formRef.current;
-    if (!formEl) return;
-    const rowEls = Array.from(formEl.children) as HTMLElement[];
-    if (rowEls.length === 0) return;
-
-    if (prefersReducedMotion) {
-      // 접근성(요청사항 ⑧): ScrollTrigger를 생성하지 않고 최종 상태만 즉시 출력.
-      gsap.set(formEl, { opacity: 1, y: 0 });
-      gsap.set(rowEls, { opacity: 1, y: 0 });
-      return;
-    }
-
-    gsap.set(formEl, { opacity: 0, y: 40 });
-    gsap.set(rowEls, { opacity: 0, y: 16 });
-
-    const ctx = gsap.context(() => {
-      ScrollTrigger.create({
-        trigger: formEl,
-        start: "top 85%",
-        once: true,
-        onEnter: () => {
-          const tl = gsap.timeline({ delay: SEQUENCE_DELAY });
-          tl.to(formEl, { opacity: 1, y: 0, duration: ENTRANCE_DURATION, ease: EASE_OUT }, 0).to(
-            rowEls,
-            { opacity: 1, y: 0, duration: ROW_DURATION, ease: EASE_OUT, stagger: ROW_STAGGER },
-            "-=0.3",
-          );
-        },
-      });
-    }, formEl);
-
-    return () => ctx.revert();
-  }, [prefersReducedMotion]);
 
   // react-hook-form의 `isSubmitting`은 리렌더를 거쳐야 버튼 `disabled`에 반영되므로,
   // 그 사이(수 ms) 두 번째 제출 이벤트(빠른 연속 탭, 필드에서 Enter+버튼 클릭 동시 등)가
@@ -195,6 +159,9 @@ export function ContactForm({ onSubmitAction }: ContactFormProps) {
       setSubmitSuccess(true);
       reset(DEFAULT_VALUES, { keepFieldsRef: true });
       trackEvent("contact_submit", { form_location: "contact_section" });
+      if (values.portfolioPartnerOptIn) {
+        trackEvent("portfolio_partner_inquiry_submit", { form_location: "contact_section" });
+      }
     } else {
       setSubmitError(result.error ?? "문의 접수 중 문제가 발생했습니다. 잠시 후 다시 시도해주세요.");
     }
@@ -215,7 +182,6 @@ export function ContactForm({ onSubmitAction }: ContactFormProps) {
 
   return (
     <form
-      ref={formRef}
       onSubmit={onSubmit}
       noValidate
       aria-busy={isSubmitting}
@@ -243,7 +209,7 @@ export function ContactForm({ onSubmitAction }: ContactFormProps) {
       </div>
 
       <div className="flex flex-col gap-1.5">
-        <Label htmlFor="contact-company">회사명 (선택)</Label>
+        <Label htmlFor="contact-company">업체명·브랜드명 (선택)</Label>
         <MotionInput
           id="contact-company"
           placeholder="코드블루"
@@ -319,6 +285,34 @@ export function ContactForm({ onSubmitAction }: ContactFormProps) {
           <ErrorMessage id="contact-message-error">{errors.message?.message}</ErrorMessage>
         </FadeMessage>
       </div>
+
+      {portfolioPartnerProgram && (
+        <div className="flex flex-col gap-1.5">
+          <div className="flex items-center gap-2">
+            <Controller
+              control={control}
+              name="portfolioPartnerOptIn"
+              render={({ field }) => (
+                <Checkbox
+                  id="contact-portfolio-partner-opt-in"
+                  checked={!!field.value}
+                  onCheckedChange={(checked: boolean) => {
+                    field.onChange(checked);
+                    if (checked) {
+                      trackEvent("portfolio_partner_opt_in", { form_location: "contact_section" });
+                    }
+                  }}
+                  onBlur={field.onBlur}
+                />
+              )}
+            />
+            <Label htmlFor="contact-portfolio-partner-opt-in">{portfolioPartnerProgram.optInLabel}</Label>
+          </div>
+          <Text size="sm" color="tertiary">
+            {portfolioPartnerProgram.optInHelperText}
+          </Text>
+        </div>
+      )}
 
       <div className="flex flex-col gap-1.5">
         <div className="flex items-center gap-2">

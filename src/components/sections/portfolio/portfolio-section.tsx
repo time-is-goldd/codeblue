@@ -67,12 +67,7 @@ export function PortfolioSection({ portfolios }: PortfolioSectionProps) {
     <Section id="portfolio" background="elevated">
       <Container className="flex flex-col items-center gap-16">
         <div ref={headingRef} className="w-full">
-          <SectionHeading
-            align="center"
-            eyebrow="Portfolio"
-            title="실제로 이렇게 만들어드립니다"
-            description="포트폴리오는 계속 쌓이는 중입니다. 곧 더 많은 사례를 확인하실 수 있습니다."
-          />
+          <SectionHeading align="center" eyebrow="Portfolio" title="실제로 이렇게 만들어드립니다" />
         </div>
 
         <div className="flex w-full flex-col gap-8 lg:gap-10">

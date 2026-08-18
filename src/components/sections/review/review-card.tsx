@@ -12,7 +12,7 @@ import { Quote } from "@/components/ui/typography/quote";
 import { cn } from "@/lib/utils";
 import { useReducedMotion } from "@/hooks/use-reduced-motion";
 import { GLASS_CARD_CLASS, CARD_HOVER_VARIANTS, CARD_HOVER_TRANSITION } from "@/lib/motion-presets";
-import type { Review } from "@/types";
+import { DEFAULT_PARTNER_DISCLOSURE_NOTE, type Review } from "@/types";
 
 export interface ReviewCardProps {
   review: Review;
@@ -57,6 +57,12 @@ const EASE_OUT = "power2.out";
  *
  * 별점은 색상만으로 의미를 전달하지 않도록(DESIGN_SYSTEM.md 13.12) `aria-label`로
  * "5점 만점에 N점"을 명시하고, 개별 별 아이콘은 장식으로 처리(`aria-hidden`)한다.
+ *
+ * 포트폴리오 협력 프로그램 경제적 이해관계 공개(2026-08-18 신설): `review.partnerDiscountProvided`가
+ * true일 때만 후기 본문 바로 아래에 공개 문구를 표시한다 — 작게 숨기거나 Footer/FAQ처럼
+ * 후기와 떨어진 곳에 두지 않고, 본문과 같은 카드 안에서 같은 `color="secondary"` 명도로
+ * 렌더링한다(눈에 잘 띄지 않는 `tertiary`를 쓰지 않는다). 혜택을 받지 않은 후기는 이
+ * 필드가 없으므로 아무것도 렌더링하지 않는다.
  */
 export function ReviewCard({ review, index }: ReviewCardProps) {
   const cardRef = useRef<HTMLDivElement>(null);
@@ -143,6 +149,16 @@ export function ReviewCard({ review, index }: ReviewCardProps) {
         </div>
 
         <Quote>{review.content}</Quote>
+
+        {review.partnerDiscountProvided && (
+          <Text
+            size="sm"
+            color="secondary"
+            className="rounded-md border border-brand-border-subtle bg-brand-bg-elevated-2 px-3 py-2"
+          >
+            {review.partnerDisclosureNote ?? DEFAULT_PARTNER_DISCLOSURE_NOTE}
+          </Text>
+        )}
       </motion.div>
     </div>
   );

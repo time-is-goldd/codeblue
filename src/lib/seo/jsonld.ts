@@ -1,6 +1,6 @@
 import { siteConfig } from "@/lib/constants/site";
 import { getContactInfo } from "@/lib/repositories/contact.repository";
-import type { Faq, PricingTier, Review, Service } from "@/types";
+import type { Faq, PricingTier, Review } from "@/types";
 
 /**
  * 구조화 데이터(JSON-LD) 빌더 모음 — DEVELOPMENT_PLAN.md Phase 10A(SEO Foundation &
@@ -68,10 +68,11 @@ export function websiteJsonLd() {
  * `apple-touch-icon.png`를 가리킨다(2026-07-24, 구 `/apple-icon` 라우트는 삭제됨).
  *
  * `openingHours`는 넣지 않는다(2026-07-24 SEO/GEO 감사에서 발견) — 이 필드는
- * `Mo,Tu,We 09:00-18:00`처럼 요일·시간 마이크로신택스를 요구하는데,
- * `contactInfo.operatingHours`("평균 1시간 내 답변")는 고정 영업시간이 아니라 응답
- * SLA 문구라 이 형식에 맞지 않는다 — 실제로 존재하지 않는 고정 영업시간을 지어내
- * 형식만 맞추기보다, 해당 없는 필드는 아예 생략하는 편이 정확한 구조화 데이터다.
+ * `Mo,Tu,We 09:00-18:00`처럼 요일·시간 마이크로신택스를 요구하는데, `contactInfo`에는
+ * 그런 고정 영업시간이 없다(2026-08-16 기준 `operatingHours`는 실측 데이터가 쌓이기
+ * 전까지 비워둔다 — `lib/data/contact.data.ts` 참고) — 실제로 존재하지 않는 고정
+ * 영업시간을 지어내 형식만 맞추기보다, 해당 없는 필드는 아예 생략하는 편이 정확한
+ * 구조화 데이터다.
  *
  * `aggregateRating`/`review`(2026-07-24 GEO 강화): schema.org는 이 두 필드를 별도의
  * 최상위 노드가 아니라 평가 대상 Thing(여기서는 ProfessionalService) 안에 중첩하는 것이
@@ -123,32 +124,6 @@ export async function professionalServiceJsonLd(reviews: Review[] = [], pricingT
             reviewBody: review.content,
           }))
         : undefined,
-  } as const;
-}
-
-/**
- * Service Schema(Home의 `#services` 섹션, 2026-07-24 GEO 강화 신설) — `getAllServices()`가
- * 반환한 3개 서비스(랜딩페이지/기업 홈페이지/홈페이지 수정)를 각각 별도 Service 노드로
- * 노출한다. "무엇을 파는가"라는 질의에 생성형 엔진이 화면 텍스트를 다시 파싱하지 않고도
- * 구조화된 답을 인용할 수 있게 하는 목적이다. 여러 개를 하나의 `<script>`에 담기 위해
- * `@graph`를 쓴다(개별 `<JsonLd>`를 3번 렌더링하는 대신). `provider`는 Organization을
- * 이름만으로 가볍게 참조한다(전체 중복 대신 최소 식별 정보만).
- */
-export function serviceJsonLd(services: Service[]) {
-  return {
-    "@context": "https://schema.org",
-    "@graph": services.map((service) => ({
-      "@type": "Service",
-      name: service.name,
-      serviceType: service.name,
-      description: service.description,
-      provider: { "@type": "Organization", name: siteConfig.name, url: siteConfig.url },
-      areaServed: "KR",
-      audience:
-        service.targetAudience.length > 0
-          ? { "@type": "Audience", audienceType: service.targetAudience.join(", ") }
-          : undefined,
-    })),
   } as const;
 }
 

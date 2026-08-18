@@ -35,8 +35,22 @@ export interface Review {
    * 준비되기 전까지는 비워둔다(placeholder 데이터끼리 임의로 짝짓지 않는다).
    */
   relatedPortfolioId?: string;
+  /** 포트폴리오 협력 프로그램(2026-08-18 신설)의 기본 제작비 할인 혜택을 받고 작성된
+   *  후기인지 — true일 때만 `ReviewCard`가 경제적 이해관계 공개 문구를 표시한다.
+   *  혜택을 받지 않은 기존 후기(REVIEW_DATA)에는 이 필드를 채우지 않는다(기본값
+   *  undefined = 미표시) — 받지 않은 후기에 임의로 공개 문구를 붙이지 않기 위함이다. */
+  partnerDiscountProvided?: boolean;
+  /** 위 필드가 true일 때 표시할 공개 문구. 지정하지 않으면 `DEFAULT_PARTNER_DISCLOSURE_NOTE`를
+   *  쓴다 — 후기마다 문구를 미세 조정해야 할 특수한 경우에만 개별 지정한다. */
+  partnerDisclosureNote?: string;
   order: number;
   isPublished: boolean;
   createdAt: string;
   updatedAt: string;
 }
+
+/** `partnerDiscountProvided`가 true인 후기에서 개별 `partnerDisclosureNote`를 지정하지
+ *  않았을 때 쓰는 기본 공개 문구 — 작게 숨기지 않고 후기 본문과 가까운 위치에 읽기 쉬운
+ *  크기로 표시해야 한다(`ReviewCard` 참고). */
+export const DEFAULT_PARTNER_DISCLOSURE_NOTE =
+  "이 후기는 포트폴리오 공개 협조에 따른 제작비 할인 혜택을 제공받은 고객이 직접 작성했습니다.";

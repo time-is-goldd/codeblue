@@ -62,10 +62,12 @@
     min-height: 100vh;
   }
 
-  /* HeroScrollytelling의 스크롤 여유 구간(200vh) 전용 — 값만 다를 뿐 위와 동일한 폴백 원칙.
-     문장이 3개→2개로 줄면서(문제 제기 → 해결책) 여유 구간도 300vh에서 200vh로 함께 줄였다. */
+  /* HeroScrollytelling의 스크롤 여유 구간(130vh) 전용 — 값만 다를 뿐 위와 동일한 폴백 원칙.
+     Hero 카피 전면 개편(2026-08-15)으로 텍스트 크로스페이드가 사라지고 배경 글로우
+     페이드만 남으면서, 200vh였던 여유 구간을 데스크톱 기준 120~140vh 범위 내로 축소했다
+     — Hero가 지나치게 길어 다음 섹션까지 불필요한 스크롤을 요구하지 않도록 한다. */
   .h-scroll-runway-safe {
-    height: 200vh;
+    height: 130vh;
   }
 
   @supports (height: 100dvh) {
@@ -78,7 +80,7 @@
     }
 
     .h-scroll-runway-safe {
-      height: 200dvh;
+      height: 130dvh;
     }
   }
 }

@@ -31,7 +31,12 @@ export function HeroModelPlaceholder({ className }: HeroModelPlaceholderProps) {
     <div
       aria-hidden="true"
       className={cn(
-        "relative size-[240px] overflow-hidden rounded-full shadow-glow-accent sm:size-[320px] lg:size-[400px]",
+        // Hero 카피 전면 개편(2026-08-15): CTA/신뢰 문구까지 스크롤 없이 한 화면에 모두
+        // 보여야 한다는 요구사항 때문에 기존 240/320/400px에서 크기를 줄였다 — 실측
+        // 결과 1366×768 등 흔한 노트북 해상도에서 기존 크기로는 CTA 버튼이 뷰포트
+        // 아래로 잘렸다. 장식 요소(배경/오브젝트) 역할로만 쓰이므로 작아져도 Hero의
+        // 핵심 메시지 전달에는 영향이 없다.
+        "relative size-[64px] overflow-hidden rounded-full shadow-glow-accent sm:size-[130px] lg:size-[150px]",
         className,
       )}
     >

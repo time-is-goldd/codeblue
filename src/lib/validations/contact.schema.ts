@@ -28,6 +28,8 @@ export const inquirySchema = z.object({
     .trim()
     .min(10, "문의 내용을 10자 이상 입력해주세요.")
     .max(2000, "문의 내용은 2000자 이내로 입력해주세요."),
+  /** 포트폴리오 협력 프로그램 안내를 받고 싶다는 선택 항목 — 필수 아님, 기본값 false. */
+  portfolioPartnerOptIn: z.boolean().optional(),
 });
 
 /**

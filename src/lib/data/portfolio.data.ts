@@ -1,12 +1,14 @@
 import type { Portfolio } from "@/types";
 
 /**
- * 실제 제작 사례 2건(2026-07-23 반영) — UI는 이 배열을 직접 import하지 않고 반드시
+ * 실제 제작 사례 2건 — UI는 이 배열을 직접 import하지 않고 반드시
  * lib/repositories/portfolio.repository.ts를 경유한다.
  *
- * problem/solution/result는 실제로 확인/측정하지 않은 수치(전환율 증가 % 등)를 지어내지
- * 않는다 — 실제 사이트(대화시스템)에 노출된 문구·사업 내용을 근거로만 서술했고, 검증되지
- * 않은 성과 지표는 `metrics`에 넣지 않았다. 실측 성과 데이터가 생기면 그때 추가한다.
+ * 카드 정보 구조 개편(2026-08-15): 단순 Before/After 서사 대신 프로젝트 구분/제작 목적/
+ * 제작 범위/주요 기능/실제-샘플 여부를 명시한다 — 확인/측정하지 않은 성과 수치(전환율 증가
+ * % 등)는 여전히 만들지 않는다. `isSample: true`인 항목(도어락 프로젝트)은 실제 고객사가
+ * 아닌 CodeBlue 자체 기획 샘플이며, 실제 사례(대화시스템)와 혼동되지 않도록 `client` 값도
+ * 실제 회사명이 아닌 샘플임을 명시하는 문구로 채운다.
  */
 export const PORTFOLIO_DATA: Portfolio[] = [
   {
@@ -20,9 +22,11 @@ export const PORTFOLIO_DATA: Portfolio[] = [
       alt: "(주)대화시스템 홈페이지 메인 화면 — 대한민국 양돈 농가의 든든한 파트너",
     },
     gallery: [],
-    problem: "축사(돈사) 건설·리모델링 전문성과 직영 시공 체계를 신뢰감 있게 보여줄 온라인 창구가 없었음",
-    solution: "돈사 신축·리모델링 시공 사례와 직영 시공 체계를 명확하게 전달하는 홈페이지 제작, 무료 견적 문의 동선 설계",
-    result: "양돈 농가 대상 무료 견적 문의를 받을 수 있는 창구 마련",
+    projectType: "기업 홈페이지 제작",
+    purpose: "기업 소개 및 시공 사례 전달",
+    scope: "약 10페이지",
+    features: ["관리자 페이지", "문의 이메일 연동", "반응형 제작", "기본 SEO", "배포"],
+    isSample: false,
     isFeatured: true,
     order: 1,
     isPublished: true,
@@ -35,16 +39,18 @@ export const PORTFOLIO_DATA: Portfolio[] = [
     id: "pf-002",
     slug: "emergency-locksmith-service",
     title: "24시 출장 도어락 서비스 홈페이지",
-    client: "24시 출장 도어락",
+    client: "업종별 샘플 시안 (실제 고객사 아님)",
     category: "small-business",
     thumbnail: {
       src: "/images/portfolio/emergency-locksmith.png",
-      alt: "24시 출장 도어락 홈페이지 메인 화면 — 경기 남부 전지역 평균 20분 내 현장 도착",
+      alt: "24시 출장 도어락 홈페이지 메인 화면 — 업종별 샘플 시안",
     },
     gallery: [],
-    problem: "출장 도어락 서비스의 신속한 대응력(평균 출동 시간)과 신뢰도를 한눈에 전달할 홈페이지가 없었음",
-    solution: "평균 출동 시간·서비스 지역·비용 투명성을 강조하고, 전화·카카오톡 문의로 바로 연결되는 홈페이지 제작",
-    result: "전화·카카오톡 문의로 즉시 연결되는 상담 창구 마련",
+    projectType: "업종별 샘플 시안",
+    purpose: "출장 서비스 업종을 가정한 신뢰도·문의 전환 홈페이지 시안 기획",
+    scope: "1페이지 시안",
+    features: ["전화·카카오톡 문의 연결", "반응형 제작"],
+    isSample: true,
     isFeatured: true,
     order: 2,
     isPublished: true,

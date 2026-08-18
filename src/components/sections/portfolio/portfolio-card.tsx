@@ -4,8 +4,9 @@ import { useLayoutEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { ExternalLink } from "lucide-react";
+import { CheckIcon, ExternalLink, ImagesIcon } from "lucide-react";
 import { ResponsiveImage, DEFAULT_HOVER_SCALE } from "@/components/ui/responsive-image";
+import { ImageLightbox } from "@/components/ui/image-lightbox";
 import { Badge } from "@/components/ui/badge";
 import { Heading } from "@/components/ui/typography/heading";
 import { Text } from "@/components/ui/typography/text";
@@ -24,20 +25,14 @@ const ENTRANCE_DURATION = 0.7;
 const EASE_OUT = "power2.out";
 
 /**
- * 홈 Portfolio 미리보기 — DEVELOPMENT_PLAN.md Phase 8(2026-07-23 CRO 재설계로 실제 구현.
- * 상세 페이지 `/portfolio/[slug]`는 2차 확장 범위로 보류).
+ * 홈 Portfolio 미리보기 카드.
  *
- * Before→After를 카드 안에서 압축해 보여준다 — 실물 증거(포트폴리오)로 Hero의 후킹
- * 메시지에 "그래서 실제로 어떤 홈페이지를 만들었는데?"라고 곧바로 답한다(2026-08-14
- * 메인 콘텐츠 재배치로 Hero 바로 다음 위치).
- *
- * UI Polish(2026-07-23): 포트폴리오는 이 사이트에서 가장 중요한 실물 증거라는 판단에
- * 따라 2열 그리드(카드당 실렌더폭 대비 너무 작은 33vw)를 버리고 1열 전체 폭으로
- * 확대했다. "이미지 | 텍스트" 좌우 분할(Desktop 60/40)·세로 스택(Mobile) 패턴을 사이트
- * 전체의 "증거 제시 레이아웃" 언어로 재사용했다 — 새로운 레이아웃을 발명하지 않고 이미
- * 검증된 패턴을 재사용한다. `sizes`도 실제 렌더 폭(데스크톱 약 55vw)에 맞게 재계산해,
- * 2열 그리드 시절 저해상도 이미지가 선택되던 문제(sizes=33vw 불일치)를 근본적으로
- * 해결했다.
+ * 정보 구조 개편(2026-08-15): 단순 이미지 전시 + Before/After 서사 대신 "프로젝트
+ * 구분/제작 목적/제작 범위/주요 기능/실제-샘플 여부"를 명시해 실제 제작 범위를 확인할 수
+ * 있게 한다. `portfolio.isSample`이 true인 항목(업종별 샘플 시안)은 배지 색상(warning)과
+ * 하단 안내 문구로 실제 고객사 프로젝트와 한눈에 구분되며, CTA 문구도 "샘플 시안 보기"로
+ * 갈음해 실제 사이트로 오인되지 않게 한다 — 실제 사이트 링크(`liveUrl`)가 있을 때만
+ * "실제 사이트 보기" 버튼을 노출한다.
  *
  * 카드 배경/Hover는 사이트 공통 규칙(`lib/motion-presets.ts`)을 그대로 따른다.
  */
@@ -88,6 +83,23 @@ export function PortfolioCard({ portfolio, index }: PortfolioCardProps) {
     />
   );
 
+  const imageBlock = portfolio.isSample ? (
+    <ImageLightbox src={portfolio.thumbnail.src} alt={portfolio.thumbnail.alt}>
+      {image}
+    </ImageLightbox>
+  ) : portfolio.liveUrl ? (
+    <a
+      href={portfolio.liveUrl}
+      target="_blank"
+      rel="noopener noreferrer"
+      aria-label={`${portfolio.title} 사이트 새 탭에서 열기`}
+    >
+      {image}
+    </a>
+  ) : (
+    image
+  );
+
   return (
     <div ref={cardRef} className="w-full">
       <motion.div
@@ -99,38 +111,43 @@ export function PortfolioCard({ portfolio, index }: PortfolioCardProps) {
           "grid grid-cols-1 gap-6 rounded-lg p-6 lg:grid-cols-[60fr_40fr] lg:items-center lg:gap-10 lg:p-8",
         )}
       >
-        {portfolio.liveUrl ? (
-          <a
-            href={portfolio.liveUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            aria-label={`${portfolio.title} 사이트 새 탭에서 열기`}
-          >
-            {image}
-          </a>
-        ) : (
-          image
-        )}
+        {imageBlock}
 
-        <div className="flex flex-col gap-3">
-          <Heading as="h3" size="h3">
-            {portfolio.title}
-          </Heading>
+        <div className="flex flex-col gap-4">
+          <div className="flex flex-col gap-3">
+            <div className="flex flex-wrap items-center gap-2">
+              <Badge variant={portfolio.isSample ? "warning" : "accent"}>{portfolio.projectType}</Badge>
+            </div>
+            <Heading as="h3" size="h3">
+              {portfolio.title}
+            </Heading>
+          </div>
 
-          <div className="flex flex-col gap-2">
+          <div className="flex flex-col gap-1.5">
             <Text size="base" color="tertiary">
               <Text as="span" size="base" weight="semibold" color="secondary">
-                Before
+                제작 목적
               </Text>{" "}
-              {portfolio.problem}
+              {portfolio.purpose}
             </Text>
             <Text size="base" color="tertiary">
               <Text as="span" size="base" weight="semibold" color="secondary">
-                After
+                제작 범위
               </Text>{" "}
-              {portfolio.result}
+              {portfolio.scope}
             </Text>
           </div>
+
+          <ul className="flex flex-col gap-1.5">
+            {portfolio.features.map((feature) => (
+              <li key={feature} className="flex items-center gap-2">
+                <CheckIcon aria-hidden className="size-icon-sm shrink-0 text-brand-accent" />
+                <Text size="base" color="secondary">
+                  {feature}
+                </Text>
+              </li>
+            ))}
+          </ul>
 
           {portfolio.metrics && portfolio.metrics.length > 0 && (
             <div className="flex flex-wrap gap-2">
@@ -142,16 +159,31 @@ export function PortfolioCard({ portfolio, index }: PortfolioCardProps) {
             </div>
           )}
 
-          {portfolio.liveUrl && (
-            <a
-              href={portfolio.liveUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex w-fit items-center gap-1.5 text-body-sm font-medium text-brand-accent hover:underline"
-            >
-              사이트 바로가기
-              <ExternalLink aria-hidden className="size-icon-sm" />
-            </a>
+          {portfolio.isSample && (
+            <Text size="sm" color="tertiary" className="italic">
+              실제 고객사 프로젝트가 아닌 CodeBlue 자체 기획 샘플입니다.
+            </Text>
+          )}
+
+          {portfolio.isSample ? (
+            <ImageLightbox src={portfolio.thumbnail.src} alt={portfolio.thumbnail.alt} className="w-fit">
+              <span className="inline-flex w-fit items-center gap-1.5 text-body-sm font-medium text-brand-accent hover:underline">
+                <ImagesIcon aria-hidden className="size-icon-sm" />
+                샘플 시안 보기
+              </span>
+            </ImageLightbox>
+          ) : (
+            portfolio.liveUrl && (
+              <a
+                href={portfolio.liveUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex w-fit items-center gap-1.5 text-body-sm font-medium text-brand-accent hover:underline"
+              >
+                실제 사이트 보기
+                <ExternalLink aria-hidden className="size-icon-sm" />
+              </a>
+            )
           )}
         </div>
       </motion.div>

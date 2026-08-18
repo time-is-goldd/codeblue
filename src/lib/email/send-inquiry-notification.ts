@@ -20,6 +20,10 @@ function buildEmailHtml(input: InquiryNotificationInput): string {
     ["연락처", input.phone],
     ["이메일", input.email],
     ["회사명", input.companyName],
+    // 값이 false여도 "아니오"라는 non-empty 문자열이라 아래 필터(Boolean(value))를
+    // 그대로 통과한다 — 선택하지 않았다는 사실도 명시적으로 남기기 위해 boolean을 미리
+    // 문자열로 변환한다(2026-08-18 포트폴리오 협력 프로그램 신설).
+    ["포트폴리오 협력 프로그램 관심", input.portfolioPartnerOptIn ? "예" : "아니오"],
     ["문의 ID", input.id],
   ];
 
@@ -43,10 +47,10 @@ function buildEmailHtml(input: InquiryNotificationInput): string {
 /**
  * 관리자에게 새 문의를 알리는 Resend 이메일 발송 — DEVELOPMENT_PLAN.md Phase 11B.
  *
- * `submitInquiry`(contact.repository.ts)가 Supabase INSERT에 성공한 뒤 호출한다.
- * 이 함수가 실패해도 문의 자체는 이미 DB에 저장되어 있으므로, 호출부는 이 실패를
- * 사용자에게 노출하지 않고 서버 로그로만 남긴다(Repository 계층의 판단, 이 파일은
- * 발송 성공/실패만 그대로 던진다).
+ * `submitInquiry`(contact.repository.ts)가 호출한다. Supabase 미사용 전환(2026-08-17)
+ * 이후로는 문의를 DB에 저장하지 않으므로 이 발송이 문의 전달의 유일한 경로다 — 실패하면
+ * 문의 자체가 유실되는 것과 같으므로, 이 함수는 실패를 삼키지 않고 그대로 던져 호출부가
+ * 사용자에게 실패를 안내하게 한다.
  */
 export async function sendInquiryNotification(input: InquiryNotificationInput): Promise<void> {
   const apiKey = process.env.RESEND_API_KEY;

@@ -11,7 +11,7 @@ export const REVIEW_DATA: Review[] = [
   {
     id: "review-001",
     name: "박○○",
-    company: "ㄷㅅ주식회사 홈페이지",
+    company: "대화시스템 홈페이지",
     rating: 5,
     content:
       "기업 홍보 페이지 제작을 의뢰했습니다.\n\n제작 기간 중 빠른 피드백과 요청한 기능들을 모두 완벽하게 구현해주셨고, 디자인도 깔끔하고 원하는 방향 그대로 제작해주셔서 매우 만족했습니다.",

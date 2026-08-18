@@ -18,10 +18,11 @@ export interface SubmitContactActionResult {
  * 이중 검증). `privacyConsent`는 `Inquiry` 데이터의 필드가 아니므로 `submitInquiry` 호출 전에
  * 제거한다.
  *
- * `submitInquiry`(Phase 11B)는 Supabase `inquiries` 저장 + 관리자 알림 메일 발송을 실제로
- * 수행한다 — 이 Action은 Repository 내부 구현을 알지 못한 채 "그대로" 호출하며, 실패를
- * 사용자에게 안전하게 안내하는 경계 역할만 한다(Repository 내부가 Supabase든 다른 저장소든
- * 이 파일은 변경되지 않는다 — ARCHITECTURE.md 3.1).
+ * `submitInquiry`는 관리자 알림 메일 발송(Resend)을 실제로 수행한다 — Supabase 미사용
+ * 전환(2026-08-17) 이후로는 DB 저장 없이 이메일 발송이 곧 성공/실패 기준이다. 이 Action은
+ * Repository 내부 구현을 알지 못한 채 "그대로" 호출하며, 실패를 사용자에게 안전하게
+ * 안내하는 경계 역할만 한다(Repository 내부 구현이 바뀌어도 이 파일은 변경되지 않는다 —
+ * ARCHITECTURE.md 3.1).
  */
 export async function submitContactAction(
   values: ContactFormValues,
@@ -31,7 +32,7 @@ export async function submitContactAction(
     return { success: false, error: "입력값을 다시 확인해주세요." };
   }
 
-  const { name, phone, message, companyName, email } = parsed.data;
+  const { name, phone, message, companyName, email, portfolioPartnerOptIn } = parsed.data;
 
   try {
     const result = await submitInquiry({
@@ -40,6 +41,7 @@ export async function submitContactAction(
       message,
       companyName: companyName || undefined,
       email: email || undefined,
+      portfolioPartnerOptIn: portfolioPartnerOptIn ?? false,
     });
     return { success: result.success };
   } catch {

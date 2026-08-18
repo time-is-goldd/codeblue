@@ -20,7 +20,7 @@ export function Footer() {
   const year = new Date().getFullYear();
 
   return (
-    <footer role="contentinfo" className="border-t border-brand-border-subtle bg-brand-bg-elevated">
+    <footer id="site-footer" role="contentinfo" className="border-t border-brand-border-subtle bg-brand-bg-elevated">
       <Container className="grid gap-10 py-16 md:grid-cols-2">
         {/* 좌측: 로고 + 브랜드 한 줄 소개 */}
         <div className="flex flex-col gap-3">
