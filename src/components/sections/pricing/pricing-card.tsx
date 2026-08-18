@@ -33,8 +33,8 @@ const EASE_OUT = "power2.out";
  * UI Polish(2026-07-23): 배경을 사이트 공통 글래스 재질로, Hover를 공통 규칙으로 통일했다.
  *
  * 카드별 CTA(2026-08-15 신설): 세 카드 모두 "무료 상담받기" → `#contact`로 동일하게
- * 연결한다 — 특정 플랜을 더 강하게 미는 문구 차이를 두지 않는다(pricing-section-bottom
- * CTA와 동일한 "고르실 필요 없다" 원칙 유지).
+ * 연결한다 — 특정 플랜을 더 강하게 미는 문구 차이를 두지 않는다(`PricingBottomCta`의
+ * 카카오톡 상담 CTA와 동일한 "고르실 필요 없다" 원칙 유지).
  */
 export function PricingCard({ tier, index }: PricingCardProps) {
   const cardRef = useRef<HTMLDivElement>(null);

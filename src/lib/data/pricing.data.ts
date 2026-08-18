@@ -1,9 +1,4 @@
-import type {
-  PricingAddOnItem,
-  PricingCommonInclusionItem,
-  PricingTier,
-  PricingValueProofItem,
-} from "@/types";
+import type { PricingAddOnItem, PricingCommonInclusionItem, PricingTier } from "@/types";
 
 /**
  * Pricing 섹션 데이터 — 가격 정책 전면 개편(2026-08-15), 2차 가격 인하(2026-08-16).
@@ -24,6 +19,10 @@ import type {
  * Custom features에서는 "간단한"/"필요한 경우"라는 소극적 표현도 함께 뺐다 — 실제
  * 제공 범위(관리자 기능 1종 또는 맞춤 기능 1종, 데이터베이스/이미지 저장소 연동)는
  * 그대로다.
+ *
+ * 플랜 간 경계 명확화(2026-08-19): Business features에서 "관리자 페이지"를 뺐다 —
+ * "관리자 기능 1종 또는 맞춤 기능 1종"이 Custom에만 있는 명확한 차별점이 되도록,
+ * 관리자 기능은 Custom부터 제공되는 것으로 정리한다.
  */
 export const PRICING_TIER_DATA: PricingTier[] = [
   {
@@ -63,7 +62,6 @@ export const PRICING_TIER_DATA: PricingTier[] = [
       "GA4 기본 연결 및 주요 CTA 이벤트 설정",
       "자료 전달 완료 후 7~14영업일",
       "선금 0원, 최종 검수 후 100% 결제",
-      "관리자 페이지",
     ],
     order: 2,
     isPublished: true,
@@ -90,33 +88,6 @@ export const PRICING_TIER_DATA: PricingTier[] = [
     isPublished: true,
     createdAt: "2026-08-15T00:00:00.000Z",
     updatedAt: "2026-08-18T00:00:00.000Z",
-  },
-];
-
-export const PRICING_VALUE_PROOF_DATA: PricingValueProofItem[] = [
-  {
-    id: "pvp-001",
-    label: "광고비 대신 개발에 투자합니다.",
-    order: 1,
-    isPublished: true,
-    createdAt: "2026-07-23T00:00:00.000Z",
-    updatedAt: "2026-07-23T00:00:00.000Z",
-  },
-  {
-    id: "pvp-002",
-    label: "영업사원 대신 대표가 직접 제작합니다.",
-    order: 2,
-    isPublished: true,
-    createdAt: "2026-07-23T00:00:00.000Z",
-    updatedAt: "2026-07-23T00:00:00.000Z",
-  },
-  {
-    id: "pvp-004",
-    label: "필요한 기능만 제안하여 불필요한 비용을 줄였습니다.",
-    order: 3,
-    isPublished: true,
-    createdAt: "2026-07-23T00:00:00.000Z",
-    updatedAt: "2026-07-23T00:00:00.000Z",
   },
 ];
 

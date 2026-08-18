@@ -32,7 +32,7 @@ export async function submitContactAction(
     return { success: false, error: "입력값을 다시 확인해주세요." };
   }
 
-  const { name, phone, message, companyName, email, portfolioPartnerOptIn } = parsed.data;
+  const { name, phone, message, companyName, email } = parsed.data;
 
   try {
     const result = await submitInquiry({
@@ -41,7 +41,6 @@ export async function submitContactAction(
       message,
       companyName: companyName || undefined,
       email: email || undefined,
-      portfolioPartnerOptIn: portfolioPartnerOptIn ?? false,
     });
     return { success: result.success };
   } catch {

@@ -18,15 +18,10 @@ import { contactFormSchema, type ContactFormValues } from "@/lib/validations/con
 import type { SubmitContactActionResult } from "@/lib/actions/contact.actions";
 import { useReducedMotion } from "@/hooks/use-reduced-motion";
 import { trackEvent } from "@/lib/analytics";
-import type { PortfolioPartnerProgram } from "@/types";
 
 export interface ContactFormProps {
   /** Server Action — COMPONENT_GUIDE.md 5.8. 이 컴포넌트는 어떻게 저장/전송되는지 모른다. */
   onSubmitAction: (values: ContactFormValues) => Promise<SubmitContactActionResult>;
-  /** 포트폴리오 협력 프로그램(2026-08-18 신설) — `isActive`일 때만 "안내를 받고 싶습니다"
-   *  선택 항목을 노출한다. Pricing의 협력 카드와 같은 데이터(`getPortfolioPartnerProgram`)를
-   *  공유해 두 영역의 온/오프가 어긋나지 않는다. */
-  portfolioPartnerProgram: PortfolioPartnerProgram | null;
 }
 
 const DEFAULT_VALUES: ContactFormValues = {
@@ -35,7 +30,6 @@ const DEFAULT_VALUES: ContactFormValues = {
   phone: "",
   email: "",
   message: "",
-  portfolioPartnerOptIn: false,
   privacyConsent: false,
 };
 
@@ -96,15 +90,14 @@ function FadeMessage({ show, prefersReducedMotion, children }: { show: boolean; 
  * 상태 error border"도 기존 `aria-invalid:border-destructive`가 이미 처리한다 — 에러
  * 메시지 자체의 fade는 `FadeMessage`가 담당한다.
  *
- * 포트폴리오 협력 프로그램(2026-08-18 신설): "문의 내용" 다음, "개인정보 동의" 이전에
- * 선택 항목 하나만 추가한다 — 필수가 아니며 기본값은 미선택이다. Pricing의 "협력 혜택
- * 문의하기" CTA는 `#contact`로만 연결한다(자동 체크는 적용하지 않는다) — 이 체크박스가
- * 항상 폼 안에 그대로 보이므로 "이동 후 선택 항목이 보이도록"이라는 요구사항은 추가
- * 로직 없이 만족되고, URL 파라미터로 자동 선택을 구현하면 `useSearchParams`가 이 홈이
- * 정적 프리렌더로 남아 있는 구조(`Suspense` 경계 필요)를 건드리게 되어 득보다 위험이 크다고
- * 판단했다.
+ * 카카오톡 우선 구조 전환(2026-08-19): 포트폴리오 협력 프로그램 선택 항목(체크박스 +
+ * 보조 설명, 관련 상태/트래킹 이벤트)을 전부 제거했다 — Pricing의 협력 배너는 이제
+ * `#contact`로만 이동하고 자동 입력은 하지 않는다. 필드 목록은 이름/업체명/연락처/
+ * 이메일/문의 내용/개인정보 동의/제출 6종으로 되돌아간다. 제출 버튼 문구를 "문의
+ * 남기기"로, 성공 메시지는 유지하되 버튼 아래 안내 문구를 "문의만 남겨도 현재 착수
+ * 가능일과 예상 제작 기간을 안내합니다." 한 줄로 바꿨다(`ContactSection`이 렌더링).
  */
-export function ContactForm({ onSubmitAction, portfolioPartnerProgram }: ContactFormProps) {
+export function ContactForm({ onSubmitAction }: ContactFormProps) {
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [submitSuccess, setSubmitSuccess] = useState(false);
   const prefersReducedMotion = useReducedMotion();
@@ -159,9 +152,6 @@ export function ContactForm({ onSubmitAction, portfolioPartnerProgram }: Contact
       setSubmitSuccess(true);
       reset(DEFAULT_VALUES, { keepFieldsRef: true });
       trackEvent("contact_submit", { form_location: "contact_section" });
-      if (values.portfolioPartnerOptIn) {
-        trackEvent("portfolio_partner_inquiry_submit", { form_location: "contact_section" });
-      }
     } else {
       setSubmitError(result.error ?? "문의 접수 중 문제가 발생했습니다. 잠시 후 다시 시도해주세요.");
     }
@@ -286,34 +276,6 @@ export function ContactForm({ onSubmitAction, portfolioPartnerProgram }: Contact
         </FadeMessage>
       </div>
 
-      {portfolioPartnerProgram && (
-        <div className="flex flex-col gap-1.5">
-          <div className="flex items-center gap-2">
-            <Controller
-              control={control}
-              name="portfolioPartnerOptIn"
-              render={({ field }) => (
-                <Checkbox
-                  id="contact-portfolio-partner-opt-in"
-                  checked={!!field.value}
-                  onCheckedChange={(checked: boolean) => {
-                    field.onChange(checked);
-                    if (checked) {
-                      trackEvent("portfolio_partner_opt_in", { form_location: "contact_section" });
-                    }
-                  }}
-                  onBlur={field.onBlur}
-                />
-              )}
-            />
-            <Label htmlFor="contact-portfolio-partner-opt-in">{portfolioPartnerProgram.optInLabel}</Label>
-          </div>
-          <Text size="sm" color="tertiary">
-            {portfolioPartnerProgram.optInHelperText}
-          </Text>
-        </div>
-      )}
-
       <div className="flex flex-col gap-1.5">
         <div className="flex items-center gap-2">
           <Controller
@@ -356,7 +318,7 @@ export function ContactForm({ onSubmitAction, portfolioPartnerProgram }: Contact
 
       <Button type="submit" size="lg" className="w-full" disabled={isSubmitting}>
         {isSubmitting && <LoadingSpinner size="sm" label="문의 전송 중" className="text-primary-foreground" />}
-        {isSubmitting ? "전송 중..." : "문의하기"}
+        {isSubmitting ? "전송 중..." : "문의 남기기"}
       </Button>
 
       <FadeMessage show={!!submitError} prefersReducedMotion={prefersReducedMotion}>
@@ -365,6 +327,10 @@ export function ContactForm({ onSubmitAction, portfolioPartnerProgram }: Contact
       <FadeMessage show={submitSuccess} prefersReducedMotion={prefersReducedMotion}>
         <SuccessMessage>문의가 정상적으로 접수되었습니다.</SuccessMessage>
       </FadeMessage>
+
+      <Text size="sm" color="tertiary" className="text-center">
+        문의만 남겨도 현재 착수 가능일과 예상 제작 기간을 안내합니다.
+      </Text>
     </form>
   );
 }

@@ -35,12 +35,6 @@ export interface Inquiry {
   industry?: PortfolioCategory | "other";
   budgetRange?: string;
   message: string;
-  /** 포트폴리오 협력 프로그램(2026-08-18 신설) 안내를 받고 싶다는 선택 항목 — 최종 계약
-   *  단계의 포트폴리오 공개 동의가 아니라 "안내를 받고 싶다"는 관심 표시일 뿐이다(이
-   *  값만으로 포트폴리오 공개에 최종 동의한 것으로 처리하지 않는다). 항상 true/false로
-   *  확정해 이메일 알림에 "예/아니오"로 남긴다 — DB가 없어 이메일이 유일한 기록이므로
-   *  선택하지 않았다는 사실도 명시적으로 남겨야 한다. */
-  portfolioPartnerOptIn: boolean;
   status: InquiryStatus;
   source?: string;
   createdAt: string;

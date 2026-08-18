@@ -4,8 +4,7 @@ import { useLayoutEffect, useRef } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { CheckIcon } from "lucide-react";
-import { ResponsiveImage, DEFAULT_HOVER_SCALE } from "@/components/ui/responsive-image";
-import { ImageLightbox } from "@/components/ui/image-lightbox";
+import { IconWrapper } from "@/components/ui/icon-wrapper";
 import { Text } from "@/components/ui/typography/text";
 import { useReducedMotion } from "@/hooks/use-reduced-motion";
 import type { AssuranceChecklistItem } from "@/types";
@@ -14,137 +13,92 @@ export interface AssuranceBlockProps {
   checklist: AssuranceChecklistItem[];
 }
 
-/** 홈페이지 제작 사기 피해를 호소하는 온라인 커뮤니티 게시글 캡처 2장(2026-07-23:
- *  이미지 5장이 반복되며 페이지 톤이 지나치게 무거워진다는 피드백에 따라 4장→2장으로
- *  축소). 텍스트가 잘리면 내용이 손상되므로 `fit="contain"`(레터박스, 크롭 없음)으로
- *  렌더링한다. */
-const IMAGES = [
-  {
-    id: "assurance-image-1",
-    src: "/images/difference/assurance-1.png",
-    alt: "선결제 후 연락이 끊기고 환불을 거절당한 홈페이지 제작 사기 피해 게시글 캡처",
-  },
-  {
-    id: "assurance-image-2",
-    src: "/images/difference/assurance-2.png",
-    alt: "전액 이체 후 제작을 의뢰했으나 업체가 연락을 피하고 있다는 피해 게시글 캡처",
-  },
-];
-
-const ITEM_STAGGER = 0.1;
+const ITEM_STAGGER = 0.08;
 const ITEM_DURATION = 0.5;
-const BLOCK_DURATION = 0.7;
 const EASE_OUT = "power2.out";
-const SLIDE_DISTANCE = 32;
 
 /**
- * Difference 섹션 Block 1 — "사기 걱정" → "100% 후불제" 안심 메시지.
+ * Difference 섹션 콘텐츠 — "계약부터 결제까지, 불안하지 않도록" 4대 원칙 그리드
+ * (2026-08-19 전면 개편).
  *
- * 레이아웃 재정리(2026-08-14, 사용자 요청): 기존에는 "이미지 세로 스택(좌) | 텍스트(우)"
- * 2열 분할이었으나, TemplateBlock 삭제로 이 Block이 Difference 섹션의 유일한 사기-근거
- * 블록이 되면서 "이미지 2장을 나란히 → 그 아래 후불제 문구 → 체크리스트"로 이어지는
- * 단일 세로 흐름으로 바꿨다. 이미지 2장은 동일한 `aspectRatio="wide"` 컨테이너를 같은 폭의
- * Grid 트랙에 넣어 크기/비율/높이/모서리/여백이 자동으로 동일하게 맞춰진다(개별 스타일
- * 조정 불필요). Desktop은 2열, Mobile은 스크린샷 텍스트 가독성을 위해 1열로 유지하다가
- * `sm`(640px)부터 2열로 전환한다 — 이미지가 더 이상 텍스트와 폭을 나눠 쓰지 않으므로 기존
- * `lg` 분기점보다 이른 시점에 2열이 가능해졌다.
+ * 이전 버전은 "홈페이지 제작 사기 피해 게시글 캡처 2장 + 확대 모달(ImageLightbox) +
+ * 후불제 문구 + 체크리스트"로 이어지는, 사기 피해 사례를 앞세운 부정적 톤의 블록이었다.
+ * 이번 개편으로 이미지/모달/피해 강조 문구를 전부 없애고, 4개 원칙(선금 0원/계약서
+ * 작성/중간 결제 없음/최종 검수 후 결제)을 체크 아이콘과 함께 바로 보여주는 짧은
+ * 신뢰·투명성 블록으로 교체했다 — 섹션 전체 높이가 기존의 "이미지 2장 + 문단 + 리스트"
+ * 대비 크게 줄어든다(요청 목표: 약 350~450px). `checklist`는 여전히
+ * `AssuranceChecklistItem[]`을 그대로 받는다(Repository/Type 변경 없음, 이 컴포넌트만
+ * 새로 렌더링 방식을 바꿨다) — 데이터 순서(선금 0원 → 계약서 작성 → 중간 결제 없음 →
+ * 최종 검수 후 결제)를 그대로 그리드 순서로 사용한다.
  *
- * 좌우 슬라이드가 아니라 다른 Difference 하위 섹션들과 동일한 fade+y(위로) 진입으로
- * 바꿨다 — 더 이상 "왼쪽 열"이라는 위치 의미가 없는 중앙 정렬 세로 레이아웃이라, 수평
- * 슬라이드보다 이 페이지 전반의 관성과 일치하는 수직 진입이 자연스럽다.
+ * `Custom은 계약 시 30%...` 각주는 정적 문구라 데이터로 빼지 않는다(`PricingRevisionPolicy`/
+ * `ContactScheduleNotice`와 동일한 원칙) — Launch/Business만 선금 0원이고 Custom은 다른
+ * 조건이라는 사실을 원칙 그리드 바로 아래, 같은 화면에서 놓치지 않게 안내한다.
  *
- * 애니메이션 책임 분리(EvidenceCard/ComparisonCard와 동일 원칙): 이 컴포넌트가 자기
- * 완결적으로 GSAP(블록 전체 진입 + 체크리스트 stagger)을 담당한다. 이미지 Hover(overflow-
- * hidden 안에서 scale 확대)는 `ResponsiveImage`의 `hoverScale`이 자체 처리한다 —
- * `hoverIgnoresReducedMotion`을 켜서 Hero 3D 로고/Trust 카드 Hover와 동일한 원칙(사용자가
- * 직접 커서를 움직여야만 재생)으로 reduced-motion 설정과 무관하게 항상 켜둔다.
+ * 애니메이션은 기존과 동일한 책임 분리 원칙(GSAP ScrollTrigger once, 카드형 원칙 4개를
+ * stagger)만 유지하고 이미지 Hover(ResponsiveImage)/ImageLightbox 관련 코드는 모두
+ * 제거했다 — 사용하지 않게 된 두 이미지 파일(`/images/difference/assurance-1.png`,
+ * `assurance-2.png`)은 다른 곳에서 참조하지 않음을 확인했지만, 파일 자체는 삭제하지
+ * 않았다(요청사항: 참조 여부를 확인하기 전까지 이미지 자산은 삭제하지 않는다).
  */
 export function AssuranceBlock({ checklist }: AssuranceBlockProps) {
-  const blockRef = useRef<HTMLDivElement>(null);
-  const itemRefs = useRef<(HTMLLIElement | null)[]>([]);
+  const listRef = useRef<HTMLUListElement>(null);
   const prefersReducedMotion = useReducedMotion();
 
   useLayoutEffect(() => {
-    const blockEl = blockRef.current;
-    const itemEls = itemRefs.current.filter((el): el is HTMLLIElement => el !== null);
-    if (!blockEl) return;
+    const listEl = listRef.current;
+    if (!listEl) return;
+    const itemEls = Array.from(listEl.children) as HTMLElement[];
+    if (itemEls.length === 0) return;
 
     if (prefersReducedMotion) {
-      // 접근성: 모든 Motion 제거, 최종 상태만 즉시 출력.
-      gsap.set(blockEl, { opacity: 1, y: 0 });
       gsap.set(itemEls, { opacity: 1, y: 0 });
       return;
     }
 
-    gsap.set(blockEl, { opacity: 0, y: SLIDE_DISTANCE });
-    gsap.set(itemEls, { opacity: 0, y: 12 });
+    gsap.set(itemEls, { opacity: 0, y: 20 });
 
     const ctx = gsap.context(() => {
       ScrollTrigger.create({
-        trigger: blockEl,
-        start: "top 80%",
+        trigger: listEl,
+        start: "top 85%",
         once: true,
         onEnter: () => {
-          const tl = gsap.timeline();
-          tl.to(blockEl, { opacity: 1, y: 0, duration: BLOCK_DURATION, ease: EASE_OUT }).to(
-            itemEls,
-            { opacity: 1, y: 0, duration: ITEM_DURATION, ease: EASE_OUT, stagger: ITEM_STAGGER },
-            "-=0.35",
-          );
+          gsap.to(itemEls, {
+            opacity: 1,
+            y: 0,
+            duration: ITEM_DURATION,
+            ease: EASE_OUT,
+            stagger: ITEM_STAGGER,
+          });
         },
       });
-    });
+    }, listEl);
 
     return () => ctx.revert();
   }, [prefersReducedMotion]);
 
   return (
-    <div ref={blockRef} className="flex w-full flex-col items-center gap-8 lg:gap-10">
-      <div className="grid w-full grid-cols-1 gap-5 sm:grid-cols-2 sm:gap-6">
-        {IMAGES.map((image) => (
-          <ImageLightbox key={image.id} src={image.src} alt={image.alt}>
-            <ResponsiveImage
-              src={image.src}
-              alt={image.alt}
-              aspectRatio="wide"
-              fit="contain"
-              sizes="(min-width: 640px) 45vw, 90vw"
-              hoverScale={DEFAULT_HOVER_SCALE}
-              hoverIgnoresReducedMotion
-            />
-          </ImageLightbox>
-        ))}
-      </div>
-
-      <div className="flex flex-col items-center gap-6 text-center">
-        <div className="flex flex-col items-center gap-2">
-          <Text size="lg" weight="semibold" className="text-brand-accent">
-            그래서 코드블루는
-          </Text>
-          <span className="inline-block w-fit rounded-lg bg-brand-accent-muted/40 px-4 py-2">
-            <Text as="span" weight="semibold" className="text-xl text-brand-accent md:text-2xl">
-              소규모 프로젝트는 선금 없이 진행합니다.
+    <div className="flex w-full flex-col items-center gap-6">
+      <ul ref={listRef} className="grid w-full grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-5">
+        {checklist.map((item) => (
+          <li
+            key={item.id}
+            className="flex items-center gap-3 rounded-lg border border-brand-border-subtle bg-brand-bg-elevated/60 px-5 py-4"
+          >
+            <IconWrapper size="sm" tone="accent" className="shrink-0">
+              <CheckIcon aria-hidden />
+            </IconWrapper>
+            <Text size="base" weight="semibold" color="primary">
+              {item.label}
             </Text>
-          </span>
-        </div>
+          </li>
+        ))}
+      </ul>
 
-        <ul className="flex flex-wrap items-center justify-center gap-x-5 gap-y-3">
-          {checklist.map((item, index) => (
-            <li
-              key={item.id}
-              ref={(el) => {
-                itemRefs.current[index] = el;
-              }}
-              className="flex items-center gap-2"
-            >
-              <CheckIcon aria-hidden className="size-icon-sm shrink-0 text-brand-accent" />
-              <Text size="base" color="primary">
-                {item.label}
-              </Text>
-            </li>
-          ))}
-        </ul>
-      </div>
+      <Text size="sm" color="tertiary" className="text-center">
+        Custom은 계약 시 30%, 최종 검수 후 70%로 진행합니다.
+      </Text>
     </div>
   );
 }

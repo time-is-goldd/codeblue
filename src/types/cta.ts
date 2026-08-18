@@ -8,8 +8,6 @@ export type CtaSlot =
   | "hero-secondary"
   | "floating-cta"
   | "portfolio-page-bottom"
-  | "pricing-section-bottom"
-  | "faq-page-bottom"
   | "contact-section";
 
 export interface Cta {

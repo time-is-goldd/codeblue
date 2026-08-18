@@ -1,13 +1,20 @@
 import type { Faq } from "@/types";
 
 /**
- * FAQ 섹션 하드코딩 데이터 — CRO 재설계(2026-07-23)로 홈 노출을 7개로 축소.
+ * FAQ 섹션 하드코딩 데이터 — CRO 재설계(2026-07-23)로 홈 노출을 7개로 축소, FAQ
+ * 축약(2026-08-19)으로 6개로 재조정.
  * Repository(faq.repository.ts)만 이 파일을 import한다.
  *
- * 홈에는 반론 제거에 직결되는 7개(order 1~7, isPublished: true)만 노출한다.
- * 나머지 12개는 삭제하지 않고 `isPublished: false`로 보존한다 — 추후 `/faq` 전용 페이지
+ * 홈에는 반론 제거에 직결되는 항목(isPublished: true)만 노출한다. 발행하지 않는 항목은
+ * 삭제하지 않고 `isPublished: false`로 보존한다 — 추후 `/faq` 전용 페이지
  * (DEVELOPMENT_PLAN.md Phase 10, 2차 확장 범위) 구현 시 그대로 재사용하기 위함이다.
  * id는 기존 콘텐츠 식별자를 그대로 유지해(질문 문구를 바꾸지 않음) 참조가 끊기지 않게 했다.
+ *
+ * FAQ 축약(2026-08-19): `faq-013`("홈페이지가 꼭 있어야 하나요?")과 `faq-019`("상담만
+ * 받아봐도 괜찮나요?")를 `isPublished: false`로 내렸다 — 반론 제거 효과가 상대적으로
+ * 약하고, 결제 관련 질문(`faq-020`, 신규)이 현재 가격 정책(선금 0원/계약금 30%)을 더
+ * 직접적으로 설명해 대체한다. 두 항목 모두 질문/답변 내용은 그대로 보존했다(향후 `/faq`
+ * 페이지에서 재사용 가능).
  */
 export const FAQ_DATA: Faq[] = [
   {
@@ -30,9 +37,9 @@ export const FAQ_DATA: Faq[] = [
     answer:
       "홈페이지는 단순한 소개 페이지가 아닙니다.\n고객은 업체를 검색했을 때 홈페이지가 있으면 더 신뢰하게 되고, 영업시간이 끝난 이후에도 홈페이지는 24시간 고객에게 회사를 소개하고 문의를 받습니다.\n한 번 제작하면 오랫동안 영업하는 온라인 영업사원이 되는 셈입니다.",
     order: 2,
-    isPublished: true,
+    isPublished: false,
     createdAt: "2026-07-22T00:00:00.000Z",
-    updatedAt: "2026-07-22T00:00:00.000Z",
+    updatedAt: "2026-08-19T00:00:00.000Z",
   },
   {
     id: "faq-019",
@@ -42,9 +49,9 @@ export const FAQ_DATA: Faq[] = [
     answer:
       "물론입니다.\n상담은 부담 없이 가능합니다.\n문의만 하셨다고 바로 계약이 진행되는 것은 아니니 편하게 궁금한 점을 말씀해주세요.",
     order: 3,
-    isPublished: true,
+    isPublished: false,
     createdAt: "2026-07-22T00:00:00.000Z",
-    updatedAt: "2026-07-22T00:00:00.000Z",
+    updatedAt: "2026-08-19T00:00:00.000Z",
   },
   {
     id: "faq-002",
@@ -57,6 +64,18 @@ export const FAQ_DATA: Faq[] = [
     isPublished: true,
     createdAt: "2026-07-22T00:00:00.000Z",
     updatedAt: "2026-07-22T00:00:00.000Z",
+  },
+  {
+    id: "faq-020",
+    category: "price",
+    emoji: "💳",
+    question: "결제는 어떻게 진행되나요?",
+    answer:
+      "Launch와 Business는 선금 없이 제작을 시작하고 최종 검수 후 결제합니다.\nCustom은 계약 시 30%, 최종 검수 후 70%로 진행합니다.",
+    order: 4.5,
+    isPublished: true,
+    createdAt: "2026-08-19T00:00:00.000Z",
+    updatedAt: "2026-08-19T00:00:00.000Z",
   },
   {
     id: "faq-010",

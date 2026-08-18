@@ -20,10 +20,6 @@ function buildEmailHtml(input: InquiryNotificationInput): string {
     ["연락처", input.phone],
     ["이메일", input.email],
     ["회사명", input.companyName],
-    // 값이 false여도 "아니오"라는 non-empty 문자열이라 아래 필터(Boolean(value))를
-    // 그대로 통과한다 — 선택하지 않았다는 사실도 명시적으로 남기기 위해 boolean을 미리
-    // 문자열로 변환한다(2026-08-18 포트폴리오 협력 프로그램 신설).
-    ["포트폴리오 협력 프로그램 관심", input.portfolioPartnerOptIn ? "예" : "아니오"],
     ["문의 ID", input.id],
   ];
 
@@ -51,6 +47,10 @@ function buildEmailHtml(input: InquiryNotificationInput): string {
  * 이후로는 문의를 DB에 저장하지 않으므로 이 발송이 문의 전달의 유일한 경로다 — 실패하면
  * 문의 자체가 유실되는 것과 같으므로, 이 함수는 실패를 삼키지 않고 그대로 던져 호출부가
  * 사용자에게 실패를 안내하게 한다.
+ *
+ * 제목 형식(2026-08-19): `[CodeBlue 새 문의] {업체명 또는 개인 문의}` — 업체명이 없으면
+ * "개인 문의"로 표시해, 받은 편지함 목록에서도 문의 성격을 바로 구분할 수 있게 한다.
+ * 고객의 전체 문의 내용/연락처는 기존과 동일하게 본문에서만 확인한다.
  */
 export async function sendInquiryNotification(input: InquiryNotificationInput): Promise<void> {
   const apiKey = process.env.RESEND_API_KEY;
@@ -65,11 +65,13 @@ export async function sendInquiryNotification(input: InquiryNotificationInput): 
 
   const resend = new Resend(apiKey);
 
+  const subjectTarget = input.companyName?.trim() || "개인 문의";
+
   const { error } = await resend.emails.send({
     from,
     to,
     replyTo: input.email || undefined,
-    subject: `[CodeBlue 문의] ${input.name}님`,
+    subject: `[CodeBlue 새 문의] ${subjectTarget}`,
     html: buildEmailHtml(input),
   });
 

@@ -5,4 +5,5 @@ export * from "./camera";
 export * from "./loading-fallback";
 export * from "./error-fallback";
 export * from "./placeholder-visual";
+export * from "./static-brand-visual";
 export * from "./model-error-boundary";

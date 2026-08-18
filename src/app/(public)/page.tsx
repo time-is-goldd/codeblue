@@ -8,16 +8,10 @@ import { FaqSection } from "@/components/sections/faq";
 import { ContactSection } from "@/components/sections/contact";
 import { getAllAssuranceChecklist } from "@/lib/repositories/difference.repository";
 import { getFeaturedPortfolios } from "@/lib/repositories/portfolio.repository";
-import {
-  getAllPricingTiers,
-  getAllPricingValueProof,
-  getAllPricingCommonInclusions,
-  getAllPricingAddOns,
-} from "@/lib/repositories/pricing.repository";
+import { getAllPricingTiers, getAllPricingCommonInclusions, getAllPricingAddOns } from "@/lib/repositories/pricing.repository";
 import { getAllReviews } from "@/lib/repositories/review.repository";
 import { getAllFaqs } from "@/lib/repositories/faq.repository";
 import { getCtaBySlot } from "@/lib/repositories/cta.repository";
-import { getContactInfo } from "@/lib/repositories/contact.repository";
 import { getPortfolioPartnerProgram } from "@/lib/repositories/portfolio-partner.repository";
 import { contactPageJsonLd, faqPageJsonLd, professionalServiceJsonLd } from "@/lib/seo/jsonld";
 import { JsonLd } from "@/components/seo/json-ld";
@@ -51,17 +45,23 @@ import { JsonLd } from "@/components/seo/json-ld";
  * 바꾸지 않았다.
  *
  * Hero의 H1이 사이트 전체에서 유일한 H1이다. 나머지 섹션은 모두 H2(각 섹션 SectionHeading
- * 참조), Faq의 개별 질문은 Accordion, Contact의 왼쪽 컬럼 헤딩은 H3.
+ * 참조), Faq의 개별 질문은 Accordion, Contact도 이제 시각적으로 보이는 H2를 쓴다
+ * (2026-08-19, 이전에는 `sr-only` H2였다).
  *
  * Phase 10A(SEO Foundation & Structured Data): Organization/WebSite JSON-LD는 전역이라
  * `app/layout.tsx`가 담당하고, 이 페이지는 Home에 실제로 존재하는 섹션에 대응하는
  * ProfessionalService/ContactPage/FAQPage를 주입한다(Services 섹션 삭제로 `serviceJsonLd`도
  * 함께 제거했다 — 화면에 없는 콘텐츠를 구조화 데이터로 남기지 않는다). `faqPageJsonLd`는
  * 위에서 이미 조회한 `faqs`를 그대로 재사용한다(SEO_PLAN.md 5.7 — 구조화 데이터는 반드시
- * 화면에 보이는 콘텐츠와 일치해야 한다). `professionalServiceJsonLd`는 `reviews`/
- * `pricingTiers`를 함께 넘겨 AggregateRating·Review·OfferCatalog(가격)를
- * ProfessionalService 안에 중첩시킨다 — 둘 다 `ReviewSection`/`PricingSection`에 전달하는
- * 것과 동일한 배열이라 화면과 어긋나지 않는다.
+ * 화면에 보이는 콘텐츠와 일치해야 한다). `professionalServiceJsonLd`/`contactPageJsonLd`는
+ * 내부에서 각자 `getContactInfo()`를 직접 호출한다 — `ContactSection`이 더 이상
+ * `contactInfo` prop을 받지 않게 되어도(2026-08-19, 홈페이지 개선) 이 JSON-LD 두 함수는
+ * 영향받지 않는다.
+ *
+ * 홈페이지 길이 정리(2026-08-19): Pricing의 "왜 이렇게 저렴할까요?" 카드와 하단
+ * 대형 CTA(`cta-004`), FAQ 하단 대형 CTA(`cta-003`)를 삭제하면서 관련 Repository 호출
+ * (`getAllPricingValueProof`, `getCtaBySlot("pricing-section-bottom"/"faq-page-bottom")`)도
+ * 함께 정리했다 — 화면에 없는 데이터를 조회하지 않는다.
  */
 export default async function HomePage() {
   const heroCtaPrimary = await getCtaBySlot("hero-primary");
@@ -69,14 +69,10 @@ export default async function HomePage() {
   const assuranceChecklist = await getAllAssuranceChecklist();
   const featuredPortfolios = await getFeaturedPortfolios();
   const pricingTiers = await getAllPricingTiers();
-  const pricingValueProof = await getAllPricingValueProof();
   const pricingCommonInclusions = await getAllPricingCommonInclusions();
   const pricingAddOns = await getAllPricingAddOns();
-  const pricingCta = await getCtaBySlot("pricing-section-bottom");
   const reviews = await getAllReviews();
   const faqs = await getAllFaqs();
-  const faqCta = await getCtaBySlot("faq-page-bottom");
-  const contactInfo = await getContactInfo();
   const portfolioPartnerProgram = await getPortfolioPartnerProgram();
   const professionalService = await professionalServiceJsonLd(reviews, pricingTiers);
   const contactPage = await contactPageJsonLd();
@@ -93,14 +89,12 @@ export default async function HomePage() {
       <DifferenceSection checklist={assuranceChecklist} />
       <PricingSection
         tiers={pricingTiers}
-        valueProofItems={pricingValueProof}
         commonInclusions={pricingCommonInclusions}
         addOns={pricingAddOns}
-        cta={pricingCta}
         portfolioPartnerProgram={portfolioPartnerProgram}
       />
-      <FaqSection faqs={faqs} cta={faqCta} />
-      <ContactSection contactInfo={contactInfo} portfolioPartnerProgram={portfolioPartnerProgram} />
+      <FaqSection faqs={faqs} />
+      <ContactSection />
     </>
   );
 }

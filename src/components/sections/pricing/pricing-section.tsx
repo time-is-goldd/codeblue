@@ -6,30 +6,25 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { Section } from "@/components/common/section";
 import { Container } from "@/components/common/container";
 import { SectionHeading } from "@/components/common/section-heading";
-import { CTABanner } from "@/components/common/cta-banner";
 import { Grid } from "@/components/common/grid";
 import { PricingCard } from "./pricing-card";
-import { PricingValueProof } from "./pricing-value-proof";
 import { PricingCommonInclusions } from "./pricing-common-inclusions";
 import { PricingAddOns } from "./pricing-addons";
 import { PricingRevisionPolicy } from "./pricing-revision-policy";
 import { PortfolioPartnerCard } from "./portfolio-partner-card";
+import { PricingBottomCta } from "./pricing-bottom-cta";
 import { useReducedMotion } from "@/hooks/use-reduced-motion";
 import type {
-  Cta,
   PortfolioPartnerProgram,
   PricingAddOnItem,
   PricingCommonInclusionItem,
   PricingTier,
-  PricingValueProofItem,
 } from "@/types";
 
 export interface PricingSectionProps {
   tiers: PricingTier[];
-  valueProofItems: PricingValueProofItem[];
   commonInclusions: PricingCommonInclusionItem[];
   addOns: PricingAddOnItem[];
-  cta: Cta | null;
   portfolioPartnerProgram: PortfolioPartnerProgram;
 }
 
@@ -40,33 +35,27 @@ const EASE_OUT = "power2.out";
  * Pricing 섹션 — CRO 재설계(2026-07-23) 신설. DEVELOPMENT_PLAN.md 원안에는 없던 섹션으로,
  * 가격 완전 비공개로 인한 문의 이탈("일단 문의"의 심리적 장벽)을 막기 위해 추가되었다.
  *
- * 배치: Difference(왜 코드블루를 선택해야 하는가) 바로 다음, Faq 바로 전. 방문자가 이미
- * Hero→Portfolio→Review→Founder→Difference를 거치며 신뢰와 관심을 충분히 쌓은 뒤 가격을
- * 마주하게 된다.
+ * 배치: Difference(안심 제작 원칙) 바로 다음, Faq 바로 전.
  *
- * 가격 정책 전면 개편(2026-08-15): Standard/Deluxe/Premium 3티어를 Launch/Business/Custom으로
- * 교체하고, 카드 밖에 공통 포함 사항(`PricingCommonInclusions`)과 추가 비용 아코디언
- * (`PricingAddOns`)을 신설했다 — 카드 안 핵심 정보(가격/포함 범위/결제 조건)가 너무 길어
- * 보이지 않도록, 세 플랜 공통 항목과 예외적인 추가 비용은 카드 밖으로 분리한다.
+ * 문구/구조 전면 정리(2026-08-19, 홈페이지 길이 정리): 제목을 "프로젝트 범위별 예상
+ * 제작비"(Eyebrow "PRICING")로, 설명을 "어떤 플랜이 맞는지 모르셔도 괜찮습니다. 필요한
+ * 범위만 제안합니다."로 바꿨다. 섹션 내부 순서를 다음으로 재배치했다:
+ * ① 제목/설명 → ② 가격 카드 3개 → ③ 추가 비용 아코디언(`PricingAddOns`, 카드 바로
+ * 아래로 이동) → ④ 공통 포함 사항(`PricingCommonInclusions`) → ⑤ 수정 횟수 안내
+ * (`PricingRevisionPolicy`, 가로형 배너로 축약) → ⑥ 포트폴리오 협력 배너
+ * (`PortfolioPartnerCard`, 가로형으로 축약, `isActive`가 false면 렌더링하지 않음) →
+ * ⑦ 최종 상담 CTA(`PricingBottomCta`, 카카오톡 상담으로 단일화).
  *
- * `pricing-section-bottom` CTA("제 상황에 맞는 플랜 추천받기")가 이 섹션의 핵심 전환
- * 지점이다 — 3티어 중 하나를 스스로 고르게 하는 대신 상담으로 안내해 결정 피로를
- * 없앤다(PricingCard에 "추천" 배지를 넣지 않는 이유와 동일한 설계 원칙).
+ * 삭제된 것: "왜 이렇게 저렴할까요?" 카드(`PricingValueProof`, 컴포넌트/데이터/Repository
+ * 함수까지 전부 제거)와 `cta-004`("어떤 플랜이 맞을지 고민되시나요?" `CTABanner`) — 두
+ * 영역 모두 반복 설명이라 페이지 길이만 늘렸다. `PricingSectionProps`에서 `valueProofItems`/
+ * `cta` prop이 사라졌으므로 `app/(public)/page.tsx`도 함께 정리했다.
  *
- * 카드 아래 영역 순서(2026-08-18 확정): Grid(가격 카드 3개) → `PricingRevisionPolicy`
- * (제작 기간 내 수정 무제한 정책) → `PortfolioPartnerCard`(포트폴리오 협력 고객 안내,
- * `isActive`가 false면 렌더링하지 않는다) → `PricingCommonInclusions`(공통 포함 사항) →
- * `PricingAddOns`(추가 비용 안내). 상품별 "통합 수정 N회"를 카드에서 없앤 대신 이
- * 순서로 "가격을 본 직후 → 왜 저렴한지 → 뭐가 포함/추가되는지"를 자연스럽게 설명한다.
+ * `spacing="comfortable"`(PC 96px)로 다른 일반 섹션과 여백을 통일하고, Container 내부
+ * 블록 간 간격도 `gap-16`(64px) → `gap-12`(48px)로 좁혀 전체 스크롤 길이를 줄였다
+ * (요청 범위 48~64px의 하한).
  */
-export function PricingSection({
-  tiers,
-  valueProofItems,
-  commonInclusions,
-  addOns,
-  cta,
-  portfolioPartnerProgram,
-}: PricingSectionProps) {
+export function PricingSection({ tiers, commonInclusions, addOns, portfolioPartnerProgram }: PricingSectionProps) {
   const headingRef = useRef<HTMLDivElement>(null);
   const prefersReducedMotion = useReducedMotion();
 
@@ -96,14 +85,14 @@ export function PricingSection({
   }, [prefersReducedMotion]);
 
   return (
-    <Section id="pricing" background="base">
-      <Container className="flex flex-col items-center gap-16">
+    <Section id="pricing" background="base" spacing="comfortable">
+      <Container className="flex flex-col items-center gap-12">
         <div ref={headingRef} className="w-full">
           <SectionHeading
             align="center"
-            eyebrow="Pricing"
-            title="예상보다 부담 없는 가격입니다"
-            description="어떤 게 맞는지 고르실 필요 없어요. 지금 상황만 말씀해주시면 저희가 골라드립니다."
+            eyebrow="PRICING"
+            title="프로젝트 범위별 예상 제작비"
+            description="어떤 플랜이 맞는지 모르셔도 괜찮습니다. 필요한 범위만 제안합니다."
           />
         </div>
 
@@ -113,25 +102,15 @@ export function PricingSection({
           ))}
         </Grid>
 
+        <PricingAddOns items={addOns} />
+
+        <PricingCommonInclusions items={commonInclusions} />
+
         <PricingRevisionPolicy />
 
         {portfolioPartnerProgram.isActive && <PortfolioPartnerCard program={portfolioPartnerProgram} />}
 
-        <PricingCommonInclusions items={commonInclusions} />
-
-        <PricingAddOns items={addOns} />
-
-        <PricingValueProof items={valueProofItems} />
-
-        {cta && (
-          <CTABanner
-            title={cta.title ?? cta.buttonLabel}
-            description={cta.description}
-            ctaLabel={cta.buttonLabel}
-            ctaHref={cta.buttonHref}
-            className="w-full"
-          />
-        )}
+        <PricingBottomCta />
       </Container>
     </Section>
   );

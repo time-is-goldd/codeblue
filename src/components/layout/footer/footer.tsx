@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Container } from "@/components/common/container";
-import { NAV_ITEMS } from "@/lib/constants/nav";
+import { FOOTER_NAV_ITEMS } from "@/lib/constants/nav";
 import { cn } from "@/lib/utils";
 import { NavLink } from "../nav-link";
 
@@ -43,10 +43,10 @@ export function Footer() {
         {/* 우측: Quick Menu (Header와 동일한 NAV_ITEMS 재사용) */}
         <nav aria-label="Footer 메뉴" className="flex flex-col gap-3 md:items-end">
           <span className="text-caption font-semibold tracking-[0.08em] text-brand-text-tertiary uppercase">
-            Quick Menu
+            바로가기
           </span>
           <ul className="flex flex-col gap-2 md:items-end">
-            {NAV_ITEMS.map((item) => (
+            {FOOTER_NAV_ITEMS.map((item) => (
               <li key={item.href}>
                 <NavLink
                   item={item}

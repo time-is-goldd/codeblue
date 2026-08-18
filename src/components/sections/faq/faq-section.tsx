@@ -6,17 +6,12 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { Section } from "@/components/common/section";
 import { Container } from "@/components/common/container";
 import { SectionHeading } from "@/components/common/section-heading";
-import { CTABanner } from "@/components/common/cta-banner";
-import { Caption } from "@/components/ui/typography/caption";
 import { FaqList } from "./faq-list";
 import { useReducedMotion } from "@/hooks/use-reduced-motion";
-import type { Cta, Faq } from "@/types";
+import type { Faq } from "@/types";
 
 export interface FaqSectionProps {
   faqs: Faq[];
-  /** Repository(`getCtaBySlot("faq-page-bottom")`)가 없으면(비활성/미등록) null — 이 경우
-   *  하단 CTA 배너를 그리지 않는다(요청사항 ⑩은 콘텐츠가 실제로 있을 때만 의미가 있다). */
-  cta: Cta | null;
 }
 
 const ENTRANCE_DURATION = 0.6;
@@ -39,8 +34,15 @@ const EASE_OUT = "power2.out";
  * FaqItem이 자기 완결적으로 처리한다.
  *
  * FAQPage JSON-LD는 이번 단계에서 구현하지 않는다(다음 SEO 단계에서 추가).
+ *
+ * 축약(2026-08-19, 홈페이지 길이 정리): 상단 보조 문구("대표님들이 가장 많이
+ * 궁금해하시는 질문", `Caption`)와 `SectionHeading`의 `description`("결제를 망설이게
+ * 만드는 질문들에 미리 답합니다.")을 삭제해 Eyebrow/H2만 남겼다. 하단의 대형 CTA
+ * 카드(`CTABanner`, `cta-003`/"faq-page-bottom" 슬롯)도 삭제했다 — FAQ 바로 다음
+ * 섹션이 Contact이므로 같은 목적의 CTA가 중복된다. `cta` prop 자체를 없앴으므로
+ * `app/(public)/page.tsx`도 `getCtaBySlot("faq-page-bottom")` 호출과 함께 정리했다.
  */
-export function FaqSection({ faqs, cta }: FaqSectionProps) {
+export function FaqSection({ faqs }: FaqSectionProps) {
   const rootRef = useRef<HTMLDivElement>(null);
   const prefersReducedMotion = useReducedMotion();
 
@@ -71,28 +73,11 @@ export function FaqSection({ faqs, cta }: FaqSectionProps) {
   }, [prefersReducedMotion]);
 
   return (
-    <Section id="faq" background="elevated">
+    <Section id="faq" background="elevated" spacing="comfortable">
       <Container size="narrow" className="flex flex-col items-center gap-16">
         <div ref={rootRef} className="flex w-full flex-col items-center gap-16">
-          <div className="flex flex-col items-center gap-3">
-            <Caption>대표님들이 가장 많이 궁금해하시는 질문</Caption>
-            <SectionHeading
-              align="center"
-              eyebrow="FAQ"
-              title="자주 묻는 질문"
-              description="결제를 망설이게 만드는 질문들에 미리 답합니다."
-            />
-          </div>
+          <SectionHeading align="center" eyebrow="FAQ" title="자주 묻는 질문" />
           <FaqList faqs={faqs} />
-          {cta && (
-            <CTABanner
-              title={cta.title ?? cta.buttonLabel}
-              description={cta.description}
-              ctaLabel={cta.buttonLabel}
-              ctaHref={cta.buttonHref}
-              className="w-full"
-            />
-          )}
         </div>
       </Container>
     </Section>

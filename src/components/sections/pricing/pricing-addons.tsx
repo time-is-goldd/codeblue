@@ -20,7 +20,7 @@ export function PricingAddOns({ items }: PricingAddOnsProps) {
         <AccordionItem variant="faq" value="pricing-addons">
           <AccordionTrigger variant="faq">
             <Text as="span" size="base" weight="semibold" color="primary">
-              추가 비용이 궁금하신가요?
+              기본 견적 외 추가 비용 보기
             </Text>
           </AccordionTrigger>
           <AccordionContent variant="faq">

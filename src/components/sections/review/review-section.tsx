@@ -33,6 +33,11 @@ const EASE_OUT = "power2.out";
  *
  * ARCHITECTURE.md 3.1 원칙대로 데이터는 페이지(app/(public)/page.tsx)가 Repository를 통해
  * 조회한 뒤 Props로 전달하며, 이 컴포넌트는 데이터 소스를 모른다.
+ *
+ * 문구/여백 정리(2026-08-19): 제목을 "고객이 직접 남긴 제작 후기"로, Eyebrow를
+ * "REVIEWS"로 바꾸고 부제("코드블루와 함께 만든 결과를...")는 카드 3장이 이미 같은
+ * 메시지를 전달하므로 삭제했다. `spacing="comfortable"`(PC 96px)로 다른 일반 섹션과
+ * 여백을 통일한다(페이지 후반부 길이 축소 요청, `components/common/section.tsx` 참고).
  */
 export function ReviewSection({ reviews }: ReviewSectionProps) {
   const headingRef = useRef<HTMLDivElement>(null);
@@ -66,14 +71,10 @@ export function ReviewSection({ reviews }: ReviewSectionProps) {
   }, [prefersReducedMotion]);
 
   return (
-    <Section id="review">
+    <Section id="review" spacing="comfortable">
       <Container className="flex flex-col items-center gap-16">
         <div ref={headingRef}>
-          <SectionHeading
-            align="center"
-            title="실제 고객의 솔직한 후기"
-            description="코드블루와 함께 만든 결과를, 고객이 직접 이야기합니다."
-          />
+          <SectionHeading align="center" eyebrow="REVIEWS" title="고객이 직접 남긴 제작 후기" />
         </div>
         <ReviewGrid reviews={reviews} />
       </Container>

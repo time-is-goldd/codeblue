@@ -37,7 +37,7 @@ export const REVIEW_DATA: Review[] = [
   {
     id: "review-003",
     name: "신○○",
-    company: "도어락 홈페이지",
+    company: "병원 홈페이지",
     rating: 5,
     content:
       "후불제여서 부담 없이 홈페이지 제작을 요청할 수 있었습니다.\n\n원하는 디자인과 기능에 맞춰 제작해주셨어요.\n\n감사합니다. 다음에도 또 문의드리겠습니다 😀",

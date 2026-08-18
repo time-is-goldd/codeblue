@@ -7,6 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
+    "test": "node --experimental-strip-types --conditions=react-server --test \"tests/**/*.test.ts\"",
     "subset-font": "node scripts/subset-font.mjs"
   },
   "dependencies": {
