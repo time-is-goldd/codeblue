@@ -2,9 +2,10 @@ import Image from "next/image";
 
 /**
  * WebGL을 사용할 수 없는 환경(또는 렌더러 생성 자체가 실패한 경우)의 영구 대체
- * 비주얼 — 운영 홈페이지 개선(2026-08-19). `HeroModelPlaceholder`가
- * `detectWebglSupport()`로 사전 검사에 실패했을 때, 또는 `<CanvasScene>` 마운트 중
- * 오류를 잡아낸 뒤 이 컴포넌트로 영구히 전환한다(재시도하지 않는다).
+ * 비주얼. `HeroModelPlaceholder`가 `<CanvasScene>` 마운트를 시도하다가
+ * `ModelErrorBoundary`로 오류를 잡아낸 뒤 이 컴포넌트로 영구히 전환한다(재시도하지
+ * 않는다) — 로딩 중 정적 로고 플래시 제거(2026-08-20)로 사전 검사 단계는 없앴고,
+ * 이 컴포넌트는 이제 실제 렌더링 실패 시의 fallback 역할만 한다.
  *
  * `PlaceholderVisual`(점선 원 + Box 아이콘)은 "아직 로딩 중"이라는 인상을 주는 임시
  * 상태용이라 이 케이스에는 맞지 않는다 — 이 화면은 그 사용자에게 사실상 "최종

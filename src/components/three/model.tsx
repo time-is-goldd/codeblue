@@ -13,12 +13,17 @@ const DEV = process.env.NODE_ENV !== "production";
 /**
  * 개발 중 등장 연출을 매 새로고침마다 강제로 재생하기 위한 디버그 플래그.
  * URL에 `?debugHero3D=1`을 붙이면 `prefers-reduced-motion` 설정과 무관하게 등장
- * 애니메이션이 항상 재생된다(운영 환경 동작에는 영향을 주지 않는, 순수 개발 편의 기능).
+ * 애니메이션이 항상 재생된다 — 개발 환경에서만 동작한다(`DEV` 가드, 배포 전 감사
+ * 2026-08-19에서 수정). 이전에는 이 가드가 없어 프로덕션에서도 이 쿼리 파라미터로
+ * `prefers-reduced-motion`을 우회할 수 있었다(실측 확인 — 기존 주석은 "운영 환경
+ * 동작에는 영향을 주지 않는다"고 설명했지만 실제 코드는 그렇지 않았다). reduced-motion
+ * 사용자의 설정을 어떤 URL로도 우회할 수 없어야 하므로 프로덕션에서는 항상 false를
+ * 반환한다.
  * 이 컴포넌트는 이미 `ssr:false`로만 로드되므로(HeroModelPlaceholder → next/dynamic)
  * window를 렌더 중 직접 읽어도 하이드레이션 불일치가 발생하지 않는다.
  */
 function readDebugReplayFlag(): boolean {
-  if (typeof window === "undefined") return false;
+  if (typeof window === "undefined" || !DEV) return false;
   return new URLSearchParams(window.location.search).has("debugHero3D");
 }
 

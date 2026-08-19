@@ -1,13 +1,14 @@
 "use client";
 
-import { useRef, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import Link from "next/link";
-import { Controller, useForm } from "react-hook-form";
+import { Controller, useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { AnimatePresence, motion } from "framer-motion";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
@@ -18,6 +19,8 @@ import { contactFormSchema, type ContactFormValues } from "@/lib/validations/con
 import type { SubmitContactActionResult } from "@/lib/actions/contact.actions";
 import { useReducedMotion } from "@/hooks/use-reduced-motion";
 import { trackEvent } from "@/lib/analytics";
+import { readAndClearCtaIntent, subscribeToCtaIntent, type CtaIntent, type InquiryTypeValue } from "@/lib/cta-intent";
+import { cn } from "@/lib/utils";
 
 export interface ContactFormProps {
   /** Server Action — COMPONENT_GUIDE.md 5.8. 이 컴포넌트는 어떻게 저장/전송되는지 모른다. */
@@ -25,13 +28,91 @@ export interface ContactFormProps {
 }
 
 const DEFAULT_VALUES: ContactFormValues = {
+  inquiryType: "new-site",
   name: "",
   companyName: "",
   phone: "",
   email: "",
+  websiteUrl: "",
   message: "",
+  plan: undefined,
+  ctaLocation: undefined,
   privacyConsent: false,
 };
+
+const MESSAGE_PLACEHOLDER = {
+  "new-site": "어떤 프로젝트를 계획 중이신가요? 편하게 남겨주세요.",
+  diagnosis: "현재 홈페이지에서 가장 고민되는 점이 있다면 편하게 남겨주세요",
+} as const;
+
+const SUBMIT_LABEL = {
+  "new-site": "제작 상담 요청하기",
+  diagnosis: "무료 진단 요청하기",
+} as const;
+
+/** 문의 유형 선택 카드(2026-08-21, 라디오 목록 → 카드 UI 개편) — 제목/보조 설명 문구.
+ *  내부 필드명·제출 데이터 키("inquiryType": "new-site"|"diagnosis")는 그대로 유지하고
+ *  화면에 보이는 카드 문구만 이 상수로 관리한다. */
+const INQUIRY_TYPE_CARDS: { value: InquiryTypeValue; id: string; title: string; description: string }[] = [
+  { value: "new-site", id: "inquiry-type-new-site", title: "새 홈페이지 제작 상담", description: "새 홈페이지가 필요해요" },
+  {
+    value: "diagnosis",
+    id: "inquiry-type-diagnosis",
+    title: "기존 홈페이지 무료 진단",
+    description: "현재 홈페이지의 개선점을 확인하고 싶어요",
+  },
+];
+
+interface InquiryTypeCardProps {
+  value: InquiryTypeValue;
+  id: string;
+  title: string;
+  description: string;
+  checked: boolean;
+}
+
+/**
+ * 문의 유형 선택 카드 하나 — 라디오 목록을 선택 카드로 개편(2026-08-21). 실제 `role="radio"`
+ * + 숨겨진 네이티브 `<input type="radio">`(`RadioGroupItem`, Base UI)는 그대로 유지하고,
+ * 카드 전체(`<label htmlFor={id}>`)로 감싸 어디를 클릭해도 선택되게 한다 — 겉모습만
+ * 버튼처럼 만든 별개 요소가 아니라 실제 그 radio의 `label`이다. 선택 상태는 테두리
+ * 색(`accent` vs `border-subtle`) + 배경(`accent-muted` vs `bg-elevated`) + 라디오 내부
+ * 채움(`RadioGroupItem` 자체가 `data-checked:bg-primary`) 세 가지 신호로 동시에
+ * 전달한다(색상 단독 의존 금지). `has-[:focus-visible]`로 카드 전체에 포커스 링을
+ * 표시해 키보드 포커스 상태도 명확히 드러낸다. 카카오톡 CTA보다 강조되지 않도록
+ * 선택 상태도 전체를 파란색으로 채우지 않고 옅은 tint만 쓴다.
+ */
+function InquiryTypeCard({ value, id, title, description, checked }: InquiryTypeCardProps) {
+  return (
+    <label
+      htmlFor={id}
+      className={cn(
+        "flex min-h-[72px] cursor-pointer items-start gap-3 rounded-md border px-4 py-4 text-left transition-colors duration-fast ease-out-expo",
+        "has-[:focus-visible]:border-ring has-[:focus-visible]:ring-3 has-[:focus-visible]:ring-ring/50",
+        checked
+          ? "border-brand-accent bg-brand-accent-muted"
+          : "border-brand-border-subtle bg-brand-bg-elevated hover:border-brand-border-strong",
+      )}
+    >
+      <RadioGroupItem value={value} id={id} className="mt-0.5 shrink-0" />
+      {/* 제목/설명 line-height 명시(2026-08-21): 이 span들은 이전에 leading을 지정하지
+          않아 상속된 기본값(브라우저/상위 요소에 따라 달라짐)에 의존했다 — 화면 확대나
+          긴 설명으로 줄바꿈될 때 겹칠 여지가 있었다. 각각 명시적인 leading으로 고정해
+          몇 줄로 늘어나도 절대 겹치지 않게 한다. */}
+      <span className="flex min-w-0 flex-col gap-1.5">
+        <span
+          className={cn(
+            "text-body-sm leading-[1.35] text-brand-text-primary",
+            checked ? "font-semibold" : "font-medium",
+          )}
+        >
+          {title}
+        </span>
+        <span className="text-caption leading-[1.45] text-brand-text-tertiary">{description}</span>
+      </span>
+    </label>
+  );
+}
 
 const FIELD_HOVER_TRANSITION = { type: "spring" as const, stiffness: 300, damping: 24 };
 const FIELD_HOVER_STYLE = {
@@ -96,6 +177,14 @@ function FadeMessage({ show, prefersReducedMotion, children }: { show: boolean; 
  * 이메일/문의 내용/개인정보 동의/제출 6종으로 되돌아간다. 제출 버튼 문구를 "문의
  * 남기기"로, 성공 메시지는 유지하되 버튼 아래 안내 문구를 "문의만 남겨도 현재 착수
  * 가능일과 예상 제작 기간을 안내합니다." 한 줄로 바꿨다(`ContactSection`이 렌더링).
+ *
+ * CTA 분리(2026-08-19 이후 2026-08-21 추가): 맨 위에 "문의 유형"(새 홈페이지 제작
+ * 상담/기존 홈페이지 무료 진단) 라디오를 추가했다(기본값 "new-site" — 기존 흐름은
+ * 이 필드를 건드리지 않아도 그대로 동작한다). "기존 홈페이지 무료 진단"을 고르면
+ * 홈페이지 주소(url) 필드가 나타나며 필수가 되고, 문의 내용 placeholder와 제출 버튼
+ * 문구가 함께 바뀐다. 마운트 시 `readAndClearCtaIntent()`로 직전에 클릭한 CTA(Pricing
+ * 카드의 플랜, 무료 진단 배너 등)의 의도를 한 번만 읽어 `setValue`로 반영한다 — 이미
+ * 값을 입력 중인 사용자를 덮어쓰지 않도록 마운트 시 1회만 실행한다.
  */
 export function ContactForm({ onSubmitAction }: ContactFormProps) {
   const [submitError, setSubmitError] = useState<string | null>(null);
@@ -107,11 +196,31 @@ export function ContactForm({ onSubmitAction }: ContactFormProps) {
     control,
     handleSubmit,
     reset,
+    setValue,
     formState: { errors, isSubmitting },
   } = useForm<ContactFormValues>({
     resolver: zodResolver(contactFormSchema),
     defaultValues: DEFAULT_VALUES,
   });
+
+  const inquiryType = useWatch({ control, name: "inquiryType" }) ?? "new-site";
+  const isDiagnosis = inquiryType === "diagnosis";
+
+  useEffect(() => {
+    function applyIntent(intent: CtaIntent) {
+      if (intent.inquiryType) setValue("inquiryType", intent.inquiryType);
+      if (intent.plan) setValue("plan", intent.plan);
+      if (intent.ctaLocation) setValue("ctaLocation", intent.ctaLocation);
+    }
+
+    // 마운트 시점에 이미 남아있는 값(예: 새로고침 직전에 클릭된 경우)을 1회 반영한다.
+    const existingIntent = readAndClearCtaIntent();
+    if (existingIntent) applyIntent(existingIntent);
+
+    // 이 페이지는 단일 스크롤 구조라 ContactForm은 이미 마운트되어 있고, CTA 클릭은
+    // 그 "이후"에 일어난다 — 이후의 클릭을 실시간으로 반영하기 위해 구독한다.
+    return subscribeToCtaIntent(applyIntent);
+  }, [setValue]);
 
   // react-hook-form의 `isSubmitting`은 리렌더를 거쳐야 버튼 `disabled`에 반영되므로,
   // 그 사이(수 ms) 두 번째 제출 이벤트(빠른 연속 탭, 필드에서 Enter+버튼 클릭 동시 등)가
@@ -177,6 +286,36 @@ export function ContactForm({ onSubmitAction }: ContactFormProps) {
       aria-busy={isSubmitting}
       className="flex w-full flex-col gap-5"
     >
+      {/* fieldset/legend 겹침 수정(2026-08-21): fieldset을 `flex flex-col`로 두면
+          <legend>이 일반 flex item으로 취급되지 않고 브라우저 고유의 legend 배치
+          알고리즘을 타서 flex `gap`이 무시된다(잘 알려진 CSS 동작) — 그래서 질문
+          문구와 카드가 거의 붙어 보였다. fieldset은 순수 리셋만 하는 일반 블록으로
+          되돌리고(`min-w-0`은 fieldset의 브라우저 기본 `min-width: min-content` 때문에
+          좁은 화면에서 내용이 넘치는 것을 막는다), legend는 `block w-full`로 문서
+          흐름에 정상적으로 배치한 뒤 `mb-4`로 카드 wrapper와의 간격을 직접 준다(부모
+          gap에 기대지 않는다). "*"는 absolute 없이 legend 텍스트 뒤에 그냥 이어지는
+          inline 요소로 자연스럽게 정렬된다. */}
+      <fieldset className="min-w-0 border-0 p-0 m-0">
+        <legend className="mb-4 block w-full p-0 text-body-sm leading-none font-medium text-brand-text-primary">
+          어떤 도움이 필요하신가요? <span aria-hidden className="text-brand-danger">*</span>
+        </legend>
+        <Controller
+          control={control}
+          name="inquiryType"
+          render={({ field }) => (
+            <RadioGroup
+              value={field.value}
+              onValueChange={field.onChange}
+              className="grid grid-cols-1 gap-2.5 sm:grid-cols-2 sm:gap-3.5"
+            >
+              {INQUIRY_TYPE_CARDS.map((card) => (
+                <InquiryTypeCard key={card.value} {...card} checked={field.value === card.value} />
+              ))}
+            </RadioGroup>
+          )}
+        />
+      </fieldset>
+
       <div className="flex flex-col gap-1.5">
         <Label htmlFor="contact-name">
           이름 <span aria-hidden className="text-brand-danger">*</span>
@@ -255,13 +394,41 @@ export function ContactForm({ onSubmitAction }: ContactFormProps) {
         </FadeMessage>
       </div>
 
+      {/* 무료 진단 전용 필드(2026-08-21) — "새 홈페이지 제작 상담"에서는 렌더링 자체를
+          하지 않는다(숨김이 아니라 DOM에서 제거 — CSS로 숨긴 필수 입력은 스크린리더에도
+          남아 혼란을 준다). 서버 URL을 직접 접속/크롤링하지 않고 이메일·Telegram
+          알림으로 전달만 한다(schema의 http/https 검증 + 길이 제한과 이중 방어). */}
+      {isDiagnosis && (
+        <div className="flex flex-col gap-1.5">
+          <Label htmlFor="contact-website-url">
+            홈페이지 주소 <span aria-hidden className="text-brand-danger">*</span>
+          </Label>
+          <MotionInput
+            id="contact-website-url"
+            type="url"
+            placeholder="https://example.com"
+            autoComplete="url"
+            required
+            aria-required="true"
+            aria-invalid={!!errors.websiteUrl}
+            aria-describedby={errors.websiteUrl ? "contact-website-url-error" : undefined}
+            whileHover={fieldHover(!!errors.websiteUrl)}
+            transition={FIELD_HOVER_TRANSITION}
+            {...register("websiteUrl")}
+          />
+          <FadeMessage show={!!errors.websiteUrl} prefersReducedMotion={prefersReducedMotion}>
+            <ErrorMessage id="contact-website-url-error">{errors.websiteUrl?.message}</ErrorMessage>
+          </FadeMessage>
+        </div>
+      )}
+
       <div className="flex flex-col gap-1.5">
         <Label htmlFor="contact-message">
           문의 내용 <span aria-hidden className="text-brand-danger">*</span>
         </Label>
         <MotionTextarea
           id="contact-message"
-          placeholder="어떤 프로젝트를 계획 중이신가요? 편하게 남겨주세요."
+          placeholder={MESSAGE_PLACEHOLDER[inquiryType]}
           rows={5}
           required
           aria-required="true"
@@ -318,7 +485,7 @@ export function ContactForm({ onSubmitAction }: ContactFormProps) {
 
       <Button type="submit" size="lg" className="w-full" disabled={isSubmitting}>
         {isSubmitting && <LoadingSpinner size="sm" label="문의 전송 중" className="text-primary-foreground" />}
-        {isSubmitting ? "전송 중..." : "문의 남기기"}
+        {isSubmitting ? "전송 중..." : SUBMIT_LABEL[inquiryType]}
       </Button>
 
       <FadeMessage show={!!submitError} prefersReducedMotion={prefersReducedMotion}>

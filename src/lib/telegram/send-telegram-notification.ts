@@ -34,10 +34,31 @@ export interface TelegramNotificationResult {
   reason?: TelegramNotificationFailureReason;
 }
 
+/** CTA 분리(2026-08-21) — 문의 유형/플랜/CTA 위치는 개인정보가 아니므로 Telegram
+ *  알림에 포함해도 기존 "개인정보 절대 미포함" 원칙(이름/연락처/이메일/문의 내용)에
+ *  어긋나지 않는다. 셋 다 선택 항목이라 값이 없으면 해당 줄 자체를 만들지 않는다 —
+ *  기존 문의(신규 제작 상담, 값 없음)는 메시지 본문이 이전과 완전히 동일하다. */
+const INQUIRY_TYPE_LABEL: Record<string, string> = {
+  "new-site": "새 홈페이지 제작 상담",
+  diagnosis: "기존 홈페이지 무료 진단",
+};
+
+const PLAN_LABEL: Record<string, string> = {
+  launch: "Launch",
+  business: "Business",
+  custom: "Custom",
+};
+
 export interface SendTelegramNotificationOptions {
   /** 테스트에서 짧은 타임아웃으로 재현하기 위한 훅 — 운영 호출부는 지정하지 않는다
    *  (기본값 `DEFAULT_TIMEOUT_MS`를 그대로 쓴다). */
   timeoutMs?: number;
+  /** 문의 유형("new-site"/"diagnosis") — 값이 있을 때만 메시지에 한 줄 추가된다. */
+  inquiryType?: string;
+  /** 선택한 플랜("launch"/"business"/"custom") — 값이 있을 때만 메시지에 한 줄 추가된다. */
+  plan?: string;
+  /** CTA가 클릭된 위치(예: "hero", "pricing_card") — 값이 있을 때만 메시지에 한 줄 추가된다. */
+  ctaLocation?: string;
 }
 
 function formatKoreaTime(date: Date): string {
@@ -48,12 +69,23 @@ function formatKoreaTime(date: Date): string {
   }).format(date);
 }
 
-function buildNotificationText(): string {
-  return [
-    "🔔 CodeBlue 새 문의가 도착했습니다.",
-    `접수 시각: ${formatKoreaTime(new Date())}`,
-    "상세 내용은 등록된 이메일에서 확인하세요.",
-  ].join("\n");
+function buildNotificationText(
+  context: Pick<SendTelegramNotificationOptions, "inquiryType" | "plan" | "ctaLocation"> = {},
+): string {
+  const lines = ["🔔 CodeBlue 새 문의가 도착했습니다.", `접수 시각: ${formatKoreaTime(new Date())}`];
+
+  if (context.inquiryType) {
+    lines.push(`문의 유형: ${INQUIRY_TYPE_LABEL[context.inquiryType] ?? context.inquiryType}`);
+  }
+  if (context.plan) {
+    lines.push(`선택한 플랜: ${PLAN_LABEL[context.plan] ?? context.plan}`);
+  }
+  if (context.ctaLocation) {
+    lines.push(`CTA 위치: ${context.ctaLocation}`);
+  }
+
+  lines.push("상세 내용은 등록된 이메일에서 확인하세요.");
+  return lines.join("\n");
 }
 
 export async function sendTelegramNotification(
@@ -81,7 +113,7 @@ export async function sendTelegramNotification(
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         chat_id: chatId,
-        text: buildNotificationText(),
+        text: buildNotificationText(options),
         disable_web_page_preview: true,
       }),
       signal: controller.signal,

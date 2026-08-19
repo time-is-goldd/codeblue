@@ -10,8 +10,14 @@
     @apply border-border outline-ring/50;
   }
 
+  /* html에도 bg-background를 준다(2026-08-20, 모바일 Hero 상단 검정 영역 수정) —
+     body만 배경을 갖고 있으면 iOS Safari의 오버스크롤/러버밴드(당겨서 새로고침 등,
+     맨 위에서 위로 더 당길 때 생기는 바운스 영역)에서 body 밖 html 배경(지정 안 하면
+     투명 → 브라우저 기본값인 검정에 가깝게 보임)이 그대로 드러나 페이지 진입 초반에
+     최상단이 검게 보일 수 있다. 데스크톱은 오버스크롤 바운스가 없어 시각적으로
+     아무 차이가 없다(Hero/body와 동일한 색이라 겹쳐 있어도 항상 자연스럽게 이어진다). */
   html {
-    @apply font-sans;
+    @apply bg-background font-sans;
     color-scheme: dark;
   }
 

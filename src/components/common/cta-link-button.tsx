@@ -14,6 +14,9 @@ export interface CtaLinkButtonProps extends VariantProps<typeof buttonVariants> 
   onNavigate?: () => void;
   className?: string;
   children: ReactNode;
+  /** 같은 문구("내 홈페이지 무료 진단받기" 등)가 여러 위치에 반복될 때 스크린리더가
+   *  위치를 구분할 수 있도록 접근성 이름을 덮어쓴다(선택) — CTA 분리(2026-08-21). */
+  "aria-label"?: string;
 }
 
 /**
@@ -28,6 +31,7 @@ export function CtaLinkButton({
   size,
   className,
   children,
+  "aria-label": ariaLabel,
 }: CtaLinkButtonProps) {
   const pathname = usePathname();
   const lenis = useLenis();
@@ -55,6 +59,7 @@ export function CtaLinkButton({
       variant={variant}
       size={size}
       className={className}
+      aria-label={ariaLabel}
     >
       {children}
     </Button>

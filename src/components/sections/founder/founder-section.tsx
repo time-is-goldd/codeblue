@@ -78,7 +78,25 @@ export function FounderSection() {
   return (
     <Section id="founder" background="elevated" spacing="comfortable">
       <Container className="flex max-w-[1150px] flex-col items-center gap-12">
-        <SectionHeading align="center" eyebrow="Founder" title="상담부터 배포까지, 대표가 직접 진행합니다." />
+        <SectionHeading
+          align="center"
+          eyebrow="Founder"
+          // leading-[1.32] md:leading-[1.25](2026-08-21): 모바일 2줄 제목의 줄 간격이
+          // 너무 좁아 보인다는 피드백에 따라 h2 기본값(leading-[1.25])보다 살짝
+          // 넓혔다. md: 이상(PC/태블릿, 이 제목은 한 줄로 표시됨)은 원래 값 그대로
+          // 되돌려 회귀가 없다 — 다른 SectionHeading 사용처(h2 전역 스타일)는
+          // 전혀 건드리지 않는다.
+          titleClassName="leading-[1.32] md:leading-[1.25]"
+          title={
+            // md:hidden(2026-08-19): 모바일에서만 "상담부터 배포까지," 다음에
+            // 줄바꿈을 넣는다. PC는 <br>이 렌더링되지 않고 공백만 남아 한 줄 배치.
+            // 온점(2026-08-21): PC에서도 온점이 보였는데("갑자기 생겼다"는 피드백),
+            // 모바일/PC 모두 온점 없이 렌더링하도록 완전히 제거했다.
+            <>
+              상담부터 배포까지,<br className="md:hidden" /> 대표가 직접 진행합니다
+            </>
+          }
+        />
 
         <div
           ref={rootRef}

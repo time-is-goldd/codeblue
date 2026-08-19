@@ -68,11 +68,23 @@ export function HeroScrollytelling({ ctaPrimary, ctaSecondary }: HeroSectionProp
 
   return (
     <section id="hero" aria-label="Hero" ref={wrapperRef} className="relative h-scroll-runway-safe">
-      <div className="sticky top-0 flex h-screen-safe flex-col items-center justify-center overflow-hidden bg-background px-4">
+      {/* pt-20 sm:pt-0: 모바일 전용 상단 여백 — 고정 Header 높이는 `<main>`의
+          padding-top(HEADER_HEIGHT+safe-area)에서 이미 보정되므로, 이 padding은
+          "Header 바로 아래 붙어 보이지 않도록" 추가하는 순수 여유 공간이다. 별도의 빈
+          div를 두지 않고 이 컨테이너 자체의 padding-top + 기존 bg-background를 그대로
+          쓰기 때문에 하이드레이션 전에도 항상 검은색으로 채워진다. sm: 이상(태블릿/PC)은
+          기존과 동일하게 0으로 되돌려 PC 상단 여백은 변경하지 않는다. */}
+      <div className="sticky top-0 flex h-screen-safe flex-col items-center justify-center overflow-hidden bg-background px-4 pt-20 sm:pt-0">
+        {/* top-0(모바일)/sm:top-1/2(PC): 글로우의 중심을 모바일에서만 컨테이너 맨 위
+            가장자리(y=0)로 옮긴다 — `-translate-y-1/2`는 그대로 유지하므로 글로우
+            원의 중심이 화면 최상단에 오고, 원 절반(위쪽)이 Header 뒤 검게 보이던
+            영역까지 번져 화면 최상단부터 파란 글로우가 자연스럽게 이어진다. 새로운
+            색상이 아니라 기존 `bg-brand-accent/10` 글로우를 그대로 재배치한 것뿐이다.
+            sm: 이상(PC)은 기존과 동일하게 중앙에 위치한다. */}
         <div
           ref={glowRef}
           aria-hidden="true"
-          className="pointer-events-none absolute top-1/2 left-1/2 size-[600px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-brand-accent/10 blur-3xl"
+          className="pointer-events-none absolute top-0 left-1/2 size-[600px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-brand-accent/10 blur-3xl sm:top-1/2"
         />
 
         {/* 진입 모션 — y(위치)/scale만 애니메이션하고 opacity는 건드리지 않는다
@@ -90,18 +102,28 @@ export function HeroScrollytelling({ ctaPrimary, ctaSecondary }: HeroSectionProp
           <Container className="relative flex flex-col items-center gap-3 text-center sm:gap-4">
             <Eyebrow>소상공인·기업 맞춤 홈페이지 제작</Eyebrow>
 
-            {/* text-[1.7rem]/sm:text-h1/lg:text-display: HeroStatic과 동일한 이유(375~390px
-                폭에서 text-h1만으로는 2번째 줄이 3줄로 깨짐)로 모바일 전용 축소 크기를 쓴다. */}
-            <Heading as="h1" size="display" className="text-balance text-[1.7rem] sm:text-h1 lg:text-display">
+            {/* 모바일 H1 확대(2026-08-20): 기존 고정 1.7rem(27.2px)은 가독성이 부족하다는
+                피드백에 따라 clamp(2.5rem,2.1rem+2vw,2.75rem)(360~390px 기준 약 41~42px,
+                최대 44px)로 키웠다. break-keep(word-break: keep-all)으로 한글이 음절
+                단위로 끊기지 않게 한다.
+                줄 간격 재조정(2026-08-21): 모바일은 겹침 방지용 1.08에서 1.24로
+                넓혔다(요청 범위 1.22~1.28). PC(sm:/lg:)도 기존 1.15가 다소 좁아
+                보인다는 피드백을 받아 1.2로 살짝 넓혔다 — 폰트 크기·자간·줄바꿈
+                위치·PC 구성은 그대로 두고 줄 간격만 조정했다. */}
+            <Heading
+              as="h1"
+              size="display"
+              className="text-balance break-keep text-[clamp(2.5rem,2.1rem+2vw,2.75rem)] leading-[1.24] sm:text-h1 sm:leading-[1.2] lg:text-display"
+            >
               검색한 고객은,
               <br />
-              홈페이지에서 결정합니다.
+              홈페이지에서 결정합니다
             </Heading>
 
             <Heading as="p" size="h2" className="text-balance text-[1.35rem] sm:text-h2 text-brand-text-secondary">
               홈페이지가 없다면 만들고,
               <br />
-              있어도 문의가 없다면 바꿉니다.
+              있어도 문의가 없다면 바꿉니다
             </Heading>
 
             <HeroModelPlaceholder />

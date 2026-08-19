@@ -51,12 +51,22 @@ function Button({
   className,
   variant = "primary",
   size = "default",
+  nativeButton,
+  render,
   ...props
 }: ButtonPrimitive.Props & VariantProps<typeof buttonVariants>) {
   return (
     <ButtonPrimitive
       data-slot="button"
       className={cn(buttonVariants({ variant, size, className }))}
+      render={render}
+      // Base UI는 `nativeButton`이 기본 true라 `render`로 실제 <button>이 아닌 요소
+      // (이 프로젝트에서는 항상 <a>/<Link>, 외부 링크·해시 앵커 CTA용)를 넘기면 실제
+      // 렌더링 결과와 어긋난다고 콘솔 경고를 남긴다 — 단순 로그가 아니라 Base UI가
+      // 키보드(Enter/Space)·role="button" 등 버튼 접근성 보강을 건너뛴다는 뜻이다.
+      // `render`가 있는데 호출부가 `nativeButton`을 명시하지 않았다면 false로 기본
+      // 설정해 그 보강이 적용되게 한다(호출부가 명시하면 그 값을 그대로 존중한다).
+      nativeButton={nativeButton ?? !render}
       {...props}
     />
   )

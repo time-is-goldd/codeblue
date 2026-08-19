@@ -1,4 +1,4 @@
-import type { PricingAddOnItem, PricingCommonInclusionItem, PricingTier } from "@/types";
+import type { PricingAddOnItem, PricingTier } from "@/types";
 
 /**
  * Pricing 섹션 데이터 — 가격 정책 전면 개편(2026-08-15), 2차 가격 인하(2026-08-16).
@@ -91,18 +91,6 @@ export const PRICING_TIER_DATA: PricingTier[] = [
   },
 ];
 
-/** 세 플랜 공통 포함 사항 — 가격 정책 전면 개편(2026-08-15) 신설.
- *  "오류 평생 무료" 같은 절대 표현은 사용하지 않고 "배포 후 30일간 제작 오류 무상 수정"으로
- *  명시한다(새 가격 정책과 다른 곳(FAQ 등)의 문구를 일치시킨다). */
-export const PRICING_COMMON_INCLUSION_DATA: PricingCommonInclusionItem[] = [
-  { id: "inc-001", label: "PC·태블릿·모바일 반응형", order: 1, isPublished: true, createdAt: "2026-08-15T00:00:00.000Z", updatedAt: "2026-08-15T00:00:00.000Z" },
-  { id: "inc-002", label: "기본 기술 SEO", order: 2, isPublished: true, createdAt: "2026-08-15T00:00:00.000Z", updatedAt: "2026-08-15T00:00:00.000Z" },
-  { id: "inc-003", label: "기본 성능 최적화", order: 3, isPublished: true, createdAt: "2026-08-15T00:00:00.000Z", updatedAt: "2026-08-15T00:00:00.000Z" },
-  { id: "inc-004", label: "도메인 연결", order: 4, isPublished: true, createdAt: "2026-08-15T00:00:00.000Z", updatedAt: "2026-08-15T00:00:00.000Z" },
-  { id: "inc-005", label: "배포", order: 5, isPublished: true, createdAt: "2026-08-15T00:00:00.000Z", updatedAt: "2026-08-15T00:00:00.000Z" },
-  { id: "inc-006", label: "소스 및 운영 계정 인계", order: 6, isPublished: true, createdAt: "2026-08-15T00:00:00.000Z", updatedAt: "2026-08-15T00:00:00.000Z" },
-  { id: "inc-007", label: "배포 후 30일간 제작 오류 무상 수정", order: 7, isPublished: true, createdAt: "2026-08-15T00:00:00.000Z", updatedAt: "2026-08-15T00:00:00.000Z" },
-];
 
 /** 기본 범위를 벗어날 때 발생하는 추가 비용 — 가격 정책 전면 개편(2026-08-15) 신설,
  *  2차 가격 인하(2026-08-16), 3차 가격 인하(2026-08-18)로 기본 제작비(30/60/150만원)에

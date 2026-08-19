@@ -40,7 +40,13 @@ export function ScrollIndicator({ className }: ScrollIndicatorProps) {
       onClick={handleClick}
       aria-label="다음 섹션으로 스크롤"
       className={cn(
-        "inline-flex flex-col items-center gap-2 rounded-md text-brand-text-tertiary outline-none transition-colors duration-fast hover:text-brand-text-secondary focus-visible:ring-3 focus-visible:ring-ring/50",
+        // hidden [@media(hover:hover)_and_(pointer:fine)]:inline-flex(2026-08-20): 이
+        // 마우스 아이콘은 "마우스 스크롤로 더 볼 수 있다"는 PC 전용 힌트라 터치 기기에는
+        // 의미가 없다(물리적 마우스가 없다). 기본은 숨김이고, 실제 마우스 hover가
+        // 가능한 정밀 포인터 환경(`(hover: hover) and (pointer: fine)`)에서만 보여준다.
+        // `pointer: coarse`의 단순 반대가 아니라 이 조합 쿼리를 직접 쓰는 이유는
+        // 터치+정밀 포인터가 공존하는 하이브리드 기기에서도 정확히 판별하기 위함이다.
+        "hidden flex-col items-center gap-2 rounded-md text-brand-text-tertiary outline-none transition-colors duration-fast hover:text-brand-text-secondary focus-visible:ring-3 focus-visible:ring-ring/50 [@media(hover:hover)_and_(pointer:fine)]:inline-flex",
         className,
       )}
     >

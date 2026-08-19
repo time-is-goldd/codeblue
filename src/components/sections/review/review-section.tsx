@@ -7,6 +7,7 @@ import { Section } from "@/components/common/section";
 import { Container } from "@/components/common/container";
 import { SectionHeading } from "@/components/common/section-heading";
 import { ReviewGrid } from "./review-grid";
+import { ReviewDiagnosisBanner } from "./review-diagnosis-banner";
 import { useReducedMotion } from "@/hooks/use-reduced-motion";
 import type { Review } from "@/types";
 
@@ -77,6 +78,11 @@ export function ReviewSection({ reviews }: ReviewSectionProps) {
           <SectionHeading align="center" eyebrow="REVIEWS" title="고객이 직접 남긴 제작 후기" />
         </div>
         <ReviewGrid reviews={reviews} />
+
+        {/* 후기 아래 무료 진단 배너(2026-08-21 신설) — 새 Section을 열지 않고 이
+            섹션의 기존 Container/여백을 그대로 재사용한다("컴팩트한 전환 배너"
+            요청사항). ReviewGrid와 동일한 gap-16으로 카드 그룹과 구분한다. */}
+        <ReviewDiagnosisBanner />
       </Container>
     </Section>
   );

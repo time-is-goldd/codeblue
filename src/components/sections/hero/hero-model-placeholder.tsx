@@ -2,7 +2,6 @@
 
 import dynamic from "next/dynamic";
 import { cn } from "@/lib/utils";
-import { useWebglSupport } from "@/hooks/use-webgl-support";
 import { PlaceholderVisual } from "@/components/three/placeholder-visual";
 import { StaticBrandVisual } from "@/components/three/static-brand-visual";
 import { ModelErrorBoundary } from "@/components/three/model-error-boundary";
@@ -28,33 +27,24 @@ export interface HeroModelPlaceholderProps {
  * HeroScrollytelling)는 이 컴포넌트만 알 뿐, 내부의 Three.js 구현(components/three/*)에는
  * 전혀 관여하지 않는다. 완전히 장식적인 요소이므로 스크린리더에서는 숨긴다.
  *
- * WebGL 미지원 대응(2026-08-19, 운영 홈페이지 개선): `<CanvasScene>`(내부에서
- * `THREE.WebGLRenderer`를 실제로 생성한다)을 마운트하기 전에 `useWebglSupport()`
- * (`detectWebglSupport()`를 `useSyncExternalStore`로 감싼 훅)로 먼저 검사한다 —
- * 두 단계 방어:
- * 1) 사전 검사(주 방어선): 지원하지 않으면 `<CanvasScene>` 자체를 한 번도 마운트하지
- *    않고 `StaticBrandVisual`(정적 브랜드 이미지)로 바로 대체한다 — "THREE.WebGLRenderer:
- *    Error creating WebGL context" 콘솔 오류가 애초에 발생할 일이 없다.
- * 2) 안전망(보조 방어선): 사전 검사를 통과했는데도 실제 렌더러 생성이 예외를 던지는
- *    드문 경우(예: 컨텍스트 한도 초과)에 대비해 기존 `ModelErrorBoundary`로 감싸되
- *    `fallback`을 `StaticBrandVisual`로 지정한다. React Error Boundary는 한 번 걸리면
- *    그 인스턴스가 계속 `fallback`만 보여주고 `children`을 다시 마운트하지 않으므로
- *    (리렌더돼도 `state.hasError`가 유지됨), 반복 마운트/무한 재시도나 콘솔 오류 반복
- *    누적이 일어나지 않는다.
+ * 로딩 중 정적 로고 플래시 제거(2026-08-20): 이전에는 `useWebglSupport()`(WebGL 지원
+ * 사전 검사, `useSyncExternalStore` 기반 SSR-safe 훅)로 서버/최초 하이드레이션 시점에는
+ * 항상 `StaticBrandVisual`을 먼저 보여준 뒤, 하이드레이션 직후 실제 값으로 다시
+ * 렌더링해 `<CanvasScene>`으로 전환했다. 하지만 이 방식은 WebGL을 지원하는
+ * 절대다수의 실제 사용자에게 "브랜드 로고 이미지 → (다시) 로딩 Placeholder →
+ * 3D 모델"로 이어지는 부자연스러운 3단계 전환을 매번 강제했다(청크 로딩 자체는
+ * `next/dynamic`의 `loading`이 이미 `<PlaceholderVisual>`을 보여주므로, 그 앞에
+ * `StaticBrandVisual`이 한 번 더 끼어드는 모양새였다). 지금은 사전 검사 없이 항상
+ * `<CanvasScene>` 마운트를 바로 시도하고, `ModelErrorBoundary`만으로 실패 시
+ * `StaticBrandVisual`로 전환한다 — 로딩 시퀀스가 "Placeholder → 3D 모델" 한 번의
+ * 전환으로 단순해진다.
  *
- * `useWebglSupport()`는 서버/최초 클라이언트 렌더에서 `false`(안전한 기본값)를 반환하고
- * 하이드레이션 직후 실제 값으로 다시 렌더링되므로(`useReducedMotion`/`usePointerCoarse`와
- * 동일한 `useSyncExternalStore` 패턴, `hooks/use-webgl-support.ts` 참고)
- * 서버/클라이언트 렌더 결과가 항상 일치해 하이드레이션 불일치가 없다.
- *
- * `prefersReducedMotion`/모바일/저전력 환경도 이 로직과 무관하게 동일하게 동작한다 —
- * `detectWebglSupport()`는 순수 브라우저 API 검사라 기기·설정에 따라 분기하지 않는다.
- * WebGL이 정상 지원되는 환경에서는 이 컴포넌트가 하던 일이 전혀 바뀌지 않으므로
- * 기존 3D 효과(호버 회전, 스크롤 연동 등, `components/three/model.tsx`)는 그대로 동작한다.
+ * 트레이드오프: WebGL을 아예 지원하지 않는 극소수 환경(구형 브라우저, GPU 비활성화
+ * 등)에서는 `THREE.WebGLRenderer`가 컨텍스트 생성을 시도하며 콘솔 경고를 한 번
+ * 남길 수 있다(사전 검사가 있던 이전 버전은 이 시도 자체를 막았다) — `ModelErrorBoundary`가
+ * 여전히 이를 잡아 `StaticBrandVisual`로 정상 대체하므로 화면이 깨지지는 않는다.
  */
 export function HeroModelPlaceholder({ className }: HeroModelPlaceholderProps) {
-  const isWebglSupported = useWebglSupport();
-
   return (
     <div
       aria-hidden="true"
@@ -68,13 +58,9 @@ export function HeroModelPlaceholder({ className }: HeroModelPlaceholderProps) {
         className,
       )}
     >
-      {isWebglSupported ? (
-        <ModelErrorBoundary fallback={<StaticBrandVisual />}>
-          <CanvasScene />
-        </ModelErrorBoundary>
-      ) : (
-        <StaticBrandVisual />
-      )}
+      <ModelErrorBoundary fallback={<StaticBrandVisual />}>
+        <CanvasScene />
+      </ModelErrorBoundary>
     </div>
   );
 }

@@ -14,12 +14,27 @@ function escapeHtml(value: string): string {
     .replace(/'/g, "&#39;");
 }
 
+const INQUIRY_TYPE_LABEL: Record<string, string> = {
+  "new-site": "새 홈페이지 제작 상담",
+  diagnosis: "기존 홈페이지 무료 진단",
+};
+
+const PLAN_LABEL: Record<string, string> = {
+  launch: "Launch",
+  business: "Business",
+  custom: "Custom",
+};
+
 function buildEmailHtml(input: InquiryNotificationInput): string {
   const rows: [string, string | undefined][] = [
+    ["문의 유형", input.inquiryType ? INQUIRY_TYPE_LABEL[input.inquiryType] : undefined],
     ["이름", input.name],
     ["연락처", input.phone],
     ["이메일", input.email],
     ["회사명", input.companyName],
+    ["홈페이지 주소", input.websiteUrl],
+    ["선택한 플랜", input.plan ? PLAN_LABEL[input.plan] : undefined],
+    ["CTA 클릭 위치", input.ctaLocation],
     ["문의 ID", input.id],
   ];
 

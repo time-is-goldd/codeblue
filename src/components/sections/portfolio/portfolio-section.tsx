@@ -8,6 +8,7 @@ import { Container } from "@/components/common/container";
 import { SectionHeading } from "@/components/common/section-heading";
 import { PortfolioCard } from "./portfolio-card";
 import { useReducedMotion } from "@/hooks/use-reduced-motion";
+import { cn } from "@/lib/utils";
 import type { Portfolio } from "@/types";
 
 export interface PortfolioSectionProps {
@@ -70,9 +71,26 @@ export function PortfolioSection({ portfolios }: PortfolioSectionProps) {
           <SectionHeading align="center" eyebrow="Portfolio" title="실제로 이렇게 만들어드립니다" />
         </div>
 
-        <div className="flex w-full flex-col gap-8 lg:gap-10">
+        {/* 모바일 가로 스크롤(2026-08-20): 카드가 2개 이상이면 overflow-x-auto +
+            snap-x snap-mandatory로 좌우 스와이프 캐러셀이 된다. 카드 1개뿐이면(스크롤할
+            대상이 없음) 이 처리를 건너뛰고 항상 세로 스택(전체 폭)으로 렌더링해 불필요한
+            빈 스크롤 영역이 생기지 않게 한다. md: 이상(PC/태블릿)은 카드 개수와 무관하게
+            항상 기존과 동일한 세로 flex 스택 — PortfolioCard 자신이 스크롤/스냅 관련
+            className을 md:에서 전부 원래 값으로 되돌린다. */}
+        <div
+          className={cn(
+            "flex w-full flex-col gap-8 lg:gap-10",
+            portfolios.length > 1 &&
+              "flex-row snap-x snap-mandatory gap-4 overflow-x-auto pb-2 [-webkit-overflow-scrolling:touch] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden md:flex-col md:snap-none md:gap-8 md:overflow-visible md:pb-0 lg:gap-10",
+          )}
+        >
           {portfolios.map((portfolio, index) => (
-            <PortfolioCard key={portfolio.id} portfolio={portfolio} index={index} />
+            <PortfolioCard
+              key={portfolio.id}
+              portfolio={portfolio}
+              index={index}
+              enableMobileCarousel={portfolios.length > 1}
+            />
           ))}
         </div>
       </Container>

@@ -12,7 +12,11 @@ import { Text } from "@/components/ui/typography/text";
 import { useReducedMotion } from "@/hooks/use-reduced-motion";
 import { GLASS_CARD_CLASS, CARD_HOVER_VARIANTS, CARD_HOVER_TRANSITION } from "@/lib/motion-presets";
 import { cn } from "@/lib/utils";
+import { setCtaIntent } from "@/lib/cta-intent";
+import { trackEvent, getDeviceType } from "@/lib/analytics";
 import type { PricingTier } from "@/types";
+
+const CTA_LOCATION = "pricing_card";
 
 export interface PricingCardProps {
   tier: PricingTier;
@@ -32,9 +36,13 @@ const EASE_OUT = "power2.out";
  *
  * UI Polish(2026-07-23): 배경을 사이트 공통 글래스 재질로, Hover를 공통 규칙으로 통일했다.
  *
- * 카드별 CTA(2026-08-15 신설): 세 카드 모두 "무료 상담받기" → `#contact`로 동일하게
- * 연결한다 — 특정 플랜을 더 강하게 미는 문구 차이를 두지 않는다(`PricingBottomCta`의
- * 카카오톡 상담 CTA와 동일한 "고르실 필요 없다" 원칙 유지).
+ * 카드별 CTA(2026-08-15 신설, 2026-08-21 플랜별 문구로 구체화): "{플랜명} 플랜
+ * 상담하기"로 어느 카드를 눌렀는지 문구 자체에서 드러낸다 — `tier.name`이 정확히
+ * "Launch"/"Business"/"Custom"이라 별도 라벨 매핑 없이 그대로 문구에 쓴다. 목적지는
+ * 여전히 `#contact` 동일. 클릭 시 `setCtaIntent`로 플랜을 세션스토리지에 남겨
+ * `ContactForm`이 마운트될 때 자동으로 반영하고(대규모 상태 관리 없이 최소 구현),
+ * GA4/Clarity에도 `consult` 이벤트로 `cta_location`/`plan`/`device_type`을 함께
+ * 기록한다 — 개인정보(이름/연락처 등)는 전송하지 않는다.
  */
 export function PricingCard({ tier, index }: PricingCardProps) {
   const cardRef = useRef<HTMLDivElement>(null);
@@ -72,6 +80,11 @@ export function PricingCard({ tier, index }: PricingCardProps) {
   }, [prefersReducedMotion, index]);
 
   const isFeatured = index === 1;
+
+  function handleCtaClick() {
+    setCtaIntent({ inquiryType: "new-site", plan: tier.slug, ctaLocation: CTA_LOCATION });
+    trackEvent("consult", { cta_location: CTA_LOCATION, plan: tier.slug, device_type: getDeviceType() });
+  }
 
   return (
     <div ref={cardRef} className="h-full">
@@ -122,8 +135,14 @@ export function PricingCard({ tier, index }: PricingCardProps) {
           ))}
         </ul>
 
-        <CtaLinkButton href="#contact" variant={isFeatured ? "cta" : "secondary"} size="default" className="mt-auto w-full">
-          무료 상담받기
+        <CtaLinkButton
+          href="#contact"
+          variant={isFeatured ? "cta" : "secondary"}
+          size="default"
+          className="mt-auto w-full"
+          onNavigate={handleCtaClick}
+        >
+          {tier.name} 플랜 상담하기
         </CtaLinkButton>
       </motion.div>
     </div>

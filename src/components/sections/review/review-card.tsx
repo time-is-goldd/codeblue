@@ -19,6 +19,9 @@ export interface ReviewCardProps {
   /** 카드 순서(0부터) — Desktop 좌→중→우 / Tablet·Mobile 위→아래 순차 등장의 지연 계산에
    *  사용한다(Trust EvidenceCard와 동일한 index 기반 stagger 원칙). */
   index: number;
+  /** 모바일 가로 스크롤 캐러셀 적용 여부 — 부모(ReviewGrid)가 후기 개수(2개 이상)로
+   *  판단해 내려준다. false면 모바일에서도 항상 전체 폭 카드로 렌더링한다. */
+  enableMobileCarousel?: boolean;
 }
 
 const MAX_RATING = 5;
@@ -64,7 +67,7 @@ const EASE_OUT = "power2.out";
  * 렌더링한다(눈에 잘 띄지 않는 `tertiary`를 쓰지 않는다). 혜택을 받지 않은 후기는 이
  * 필드가 없으므로 아무것도 렌더링하지 않는다.
  */
-export function ReviewCard({ review, index }: ReviewCardProps) {
+export function ReviewCard({ review, index, enableMobileCarousel = false }: ReviewCardProps) {
   const cardRef = useRef<HTMLDivElement>(null);
   const starRefs = useRef<(SVGSVGElement | null)[]>([]);
   const prefersReducedMotion = useReducedMotion();
@@ -106,7 +109,17 @@ export function ReviewCard({ review, index }: ReviewCardProps) {
   }, [prefersReducedMotion, index]);
 
   return (
-    <div ref={cardRef} className="h-full">
+    <div
+      ref={cardRef}
+      className={cn(
+        "h-full",
+        // 모바일 캐러셀 카드 폭 — Portfolio 카드와 동일한 원칙(약 90%로 다음 카드가
+        // 살짝 보이게, snap-start + scroll-snap-stop:always로 스와이프 1회에 카드
+        // 1개씩 정렬). md: 이상은 전부 원래 값으로 되돌아간다.
+        enableMobileCarousel &&
+          "w-[90%] shrink-0 snap-start [scroll-snap-stop:always] md:w-full md:shrink md:snap-align-none",
+      )}
+    >
       <motion.div
         variants={CARD_HOVER_VARIANTS}
         whileHover={prefersReducedMotion ? undefined : "hover"}

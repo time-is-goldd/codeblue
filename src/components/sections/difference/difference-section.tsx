@@ -79,7 +79,19 @@ export function DifferenceSection({ checklist }: DifferenceSectionProps) {
     <Section id="difference" background="base" spacing="compact">
       <Container className="flex flex-col items-center gap-8">
         <div ref={headingRef} className="w-full">
-          <SectionHeading align="center" title="계약부터 결제까지, 불안하지 않도록" />
+          <SectionHeading
+            align="center"
+            // leading-[1.32] md:leading-[1.25]: Founder 제목과 동일한 원칙 — 모바일
+            // 2줄 제목 줄 간격만 넓히고, PC/태블릿(한 줄 표시)은 원래 값 그대로다.
+            titleClassName="leading-[1.32] md:leading-[1.25]"
+            title={
+              // md:hidden(2026-08-19): 모바일에서만 "계약부터 결제까지," 다음에
+              // 줄바꿈을 넣는다. PC는 <br>이 렌더링되지 않아 기존과 동일한 한 줄 배치.
+              <>
+                계약부터 결제까지,<br className="md:hidden" /> 불안하지 않도록
+              </>
+            }
+          />
         </div>
 
         <AssuranceBlock checklist={checklist} />

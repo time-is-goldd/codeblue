@@ -44,7 +44,11 @@ export async function submitInquiry(
 
   await sendInquiryNotification({ ...input, id });
 
-  await sendTelegramNotification();
+  await sendTelegramNotification({
+    inquiryType: input.inquiryType,
+    plan: input.plan,
+    ctaLocation: input.ctaLocation,
+  });
 
   return { success: true, id };
 }

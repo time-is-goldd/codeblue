@@ -22,6 +22,18 @@ import type { NextConfig } from "next";
  *   `www.google-analytics.com`(리전별 서브도메인 포함), Clarity는 `www.clarity.ms`와
  *   데이터 수집에 쓰는 서브도메인들(`*.clarity.ms`, 예: c.clarity.ms) — 둘 다
  *   Microsoft/Google 공식 문서가 권장하는 최소 목록이다.
+ *
+ * 배포 전 감사(2026-08-19)에서 추가한 헤더 — 기존 CSP/스크립트/연동에는 영향 없음
+ * (production preview에서 헤더/기능 모두 재검증 완료):
+ * - `frame-ancestors 'self'`: `X-Frame-Options: SAMEORIGIN`과 동일한 의도를 최신 CSP
+ *   표준으로도 명시한다(구형 브라우저 호환을 위해 `X-Frame-Options`는 그대로 둔다).
+ * - `Strict-Transport-Security`: Vercel은 항상 HTTPS로 서빙하므로 브라우저가 이후
+ *   요청을 자동으로 HTTPS로만 보내도록 강제한다. `preload`는 넣지 않았다 — HSTS
+ *   preload 목록 등록은 사실상 되돌리기 어려운 결정이라 운영자가 별도로 판단할 사항이다
+ *   (POST_DEPLOY_CHECKLIST.md 참고).
+ * - `Permissions-Policy`: 이 사이트가 실제로 쓰지 않는 민감 브라우저 기능만 껐다
+ *   (camera/microphone/geolocation/payment/usb — 코드 전체에서 grep으로 미사용 확인).
+ *   Three.js(Hero 3D)·GSAP·GA4·Clarity·카카오 링크 중 어느 것도 이 기능들을 쓰지 않는다.
  */
 const securityHeaders = [
   {
@@ -37,6 +49,14 @@ const securityHeaders = [
     value: "strict-origin-when-cross-origin",
   },
   {
+    key: "Strict-Transport-Security",
+    value: "max-age=63072000; includeSubDomains",
+  },
+  {
+    key: "Permissions-Policy",
+    value: "camera=(), microphone=(), geolocation=(), payment=(), usb=()",
+  },
+  {
     key: "Content-Security-Policy",
     value: [
       "default-src 'self'",
@@ -45,11 +65,16 @@ const securityHeaders = [
       "img-src 'self' data: blob:",
       "font-src 'self' data:",
       "connect-src 'self' https://www.google-analytics.com https://*.google-analytics.com https://www.googletagmanager.com https://www.clarity.ms https://*.clarity.ms",
+      "frame-ancestors 'self'",
     ].join("; "),
   },
 ];
 
 const nextConfig: NextConfig = {
+  /** 배포 전 감사(2026-08-19): 응답에서 `X-Powered-By: Next.js` 헤더를 제거한다 —
+   *  기능에는 영향이 없고, 프레임워크/버전 정보를 불필요하게 노출하지 않기 위한
+   *  최소 강화다(production preview로 헤더가 실제로 사라지는지 확인 완료). */
+  poweredByHeader: false,
   async headers() {
     return [
       {

@@ -77,3 +77,10 @@ export function trackEvent(eventName: string, params?: AnalyticsEventParams) {
     window.clarity("event", eventName);
   }
 }
+
+/** CTA 분리(2026-08-21) — `consult`/`diagnosis` 이벤트의 `device_type` 파라미터용.
+ *  프로젝트 전반의 모바일/PC 분기 기준(md, 768px)과 동일한 폭을 기준으로 삼는다. */
+export function getDeviceType(): "mobile" | "desktop" {
+  if (typeof window === "undefined") return "desktop";
+  return window.innerWidth < 768 ? "mobile" : "desktop";
+}

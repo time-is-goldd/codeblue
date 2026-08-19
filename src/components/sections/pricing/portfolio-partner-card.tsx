@@ -29,8 +29,8 @@ export interface PortfolioPartnerCardProps {
  * `pricing-section.tsx`에서 분기) — 모집 완료 후 잔여 인원을 실시간으로 보여줄 방법이
  * 없으므로, 프로그램을 통째로 숨기는 것이 부정확한 숫자 표시보다 낫다.
  *
- * 애니메이션은 두지 않는다(형제 배너인 `PricingRevisionPolicy`/`PricingCommonInclusions`와
- * 동일한 원칙) — 화면 진입 즉시 읽을 수 있어야 한다. IntersectionObserver는 GA4 노출
+ * 애니메이션은 두지 않는다(형제 배너인 `PricingRevisionPolicy`와 동일한 원칙) — 화면
+ * 진입 즉시 읽을 수 있어야 한다. IntersectionObserver는 GA4 노출
  * 이벤트(`portfolio_partner_view`) 측정 전용이며 화면에는 영향을 주지 않는다.
  */
 export function PortfolioPartnerCard({ program }: PortfolioPartnerCardProps) {

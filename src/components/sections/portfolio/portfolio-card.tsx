@@ -18,6 +18,9 @@ import type { Portfolio } from "@/types";
 export interface PortfolioCardProps {
   portfolio: Portfolio;
   index: number;
+  /** 모바일 가로 스크롤 캐러셀 적용 여부 — 부모(PortfolioSection)가 카드 개수(2개 이상)로
+   *  판단해 내려준다. false면 모바일에서도 항상 전체 폭 세로 스택 카드로 렌더링한다. */
+  enableMobileCarousel?: boolean;
 }
 
 const STAGGER_DELAY = 0.15;
@@ -36,7 +39,7 @@ const EASE_OUT = "power2.out";
  *
  * 카드 배경/Hover는 사이트 공통 규칙(`lib/motion-presets.ts`)을 그대로 따른다.
  */
-export function PortfolioCard({ portfolio, index }: PortfolioCardProps) {
+export function PortfolioCard({ portfolio, index, enableMobileCarousel = false }: PortfolioCardProps) {
   const cardRef = useRef<HTMLDivElement>(null);
   const prefersReducedMotion = useReducedMotion();
 
@@ -101,7 +104,20 @@ export function PortfolioCard({ portfolio, index }: PortfolioCardProps) {
   );
 
   return (
-    <div ref={cardRef} className="w-full">
+    <div
+      ref={cardRef}
+      className={cn(
+        "w-full",
+        // 모바일 캐러셀 카드 폭(2026-08-20): 컨테이너의 약 90%로 설정해 오른쪽에 다음
+        // 카드가 살짝 보이게 한다(가로 스크롤 구조임을 문구 없이도 알아볼 수 있게).
+        // shrink-0으로 flex가 폭을 줄이지 못하게 하고, snap-start + scroll-snap-stop:
+        // always로 한 번 스와이프하면 다음 카드에 정확히 정렬되며 여러 장을 건너뛰지
+        // 않는다. md: 이상(PC/태블릿)은 전부 원래 값(w-full, shrink, snap 없음)으로
+        // 되돌아간다.
+        enableMobileCarousel &&
+          "w-[90%] shrink-0 snap-start [scroll-snap-stop:always] md:w-full md:shrink md:snap-align-none",
+      )}
+    >
       <motion.div
         variants={CARD_HOVER_VARIANTS}
         whileHover={prefersReducedMotion ? undefined : "hover"}

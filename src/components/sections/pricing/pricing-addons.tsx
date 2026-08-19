@@ -9,7 +9,7 @@ export interface PricingAddOnsProps {
 /**
  * 기본 범위를 벗어날 때 발생하는 추가 비용 안내 — 가격 정책 전면 개편(2026-08-15) 신설.
  * 카드 안에 넣으면 핵심 정보(가격/포함 범위)가 묻히므로, 카드 밖 아코디언으로 분리해
- * 필요한 사람만 펼쳐 보게 한다(기본은 닫힘) — Grid/PricingCommonInclusions 바로 아래.
+ * 필요한 사람만 펼쳐 보게 한다(기본은 닫힘) — 가격 카드 Grid 바로 아래.
  */
 export function PricingAddOns({ items }: PricingAddOnsProps) {
   if (items.length === 0) return null;

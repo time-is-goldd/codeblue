@@ -8,7 +8,7 @@ import { FaqSection } from "@/components/sections/faq";
 import { ContactSection } from "@/components/sections/contact";
 import { getAllAssuranceChecklist } from "@/lib/repositories/difference.repository";
 import { getFeaturedPortfolios } from "@/lib/repositories/portfolio.repository";
-import { getAllPricingTiers, getAllPricingCommonInclusions, getAllPricingAddOns } from "@/lib/repositories/pricing.repository";
+import { getAllPricingTiers, getAllPricingAddOns } from "@/lib/repositories/pricing.repository";
 import { getAllReviews } from "@/lib/repositories/review.repository";
 import { getAllFaqs } from "@/lib/repositories/faq.repository";
 import { getCtaBySlot } from "@/lib/repositories/cta.repository";
@@ -69,7 +69,6 @@ export default async function HomePage() {
   const assuranceChecklist = await getAllAssuranceChecklist();
   const featuredPortfolios = await getFeaturedPortfolios();
   const pricingTiers = await getAllPricingTiers();
-  const pricingCommonInclusions = await getAllPricingCommonInclusions();
   const pricingAddOns = await getAllPricingAddOns();
   const reviews = await getAllReviews();
   const faqs = await getAllFaqs();
@@ -89,7 +88,6 @@ export default async function HomePage() {
       <DifferenceSection checklist={assuranceChecklist} />
       <PricingSection
         tiers={pricingTiers}
-        commonInclusions={pricingCommonInclusions}
         addOns={pricingAddOns}
         portfolioPartnerProgram={portfolioPartnerProgram}
       />
