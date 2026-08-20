@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
 import { cn } from "@/lib/utils";
 import { PlaceholderVisual } from "@/components/three/placeholder-visual";
@@ -16,6 +17,44 @@ const CanvasScene = dynamic(() => import("@/components/three/canvas-scene").then
   ssr: false,
   loading: () => <PlaceholderVisual />,
 });
+
+/**
+ * PageSpeed Insights 모바일 성능 감사(2026-08-19)에서 실측 — 이 컴포넌트가 마운트
+ * 즉시 `<CanvasScene />`을 렌더링하면 `next/dynamic`의 `import()`가 곧바로 트리거되어
+ * Three.js/@react-three 청크(gzip 약 90KB대, GLB 모델 포함 시 약 380KB)가 CSS·서브셋
+ * 폰트·다른 초기 스크립트 청크들과 동시에 네트워크 대역폭을 두고 경쟁하게 된다.
+ * 실제 프로덕션 도메인 대상 CDP 트레이스(모바일 스로틀링)에서 LCP 요소(Hero H1)가
+ * 필요로 하는 폰트가 이 경쟁 때문에 늦게 완료되는 것을 확인했다 — Three.js 자체를
+ * 삭제하지 않고, "핵심 콘텐츠가 렌더링된 뒤 3D를 점진적으로 로드"하는 방향으로
+ * 타이밍만 늦춘다. `requestIdleCallback`(미지원 브라우저는 짧은 `setTimeout`)로
+ * 메인 스레드가 한가해진 뒤에야 `import()`를 트리거해, 초기 크리티컬 리소스와의
+ * 대역폭 경쟁을 없앤다 — 그 전까지는 기존과 동일한 `PlaceholderVisual`을 보여준다.
+ */
+function useDeferredMount(delayMs: number): boolean {
+  const [ready, setReady] = useState(false);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    let idleId: number | undefined;
+    let timeoutId: number | undefined;
+
+    if (typeof window.requestIdleCallback === "function") {
+      idleId = window.requestIdleCallback(() => setReady(true), { timeout: delayMs });
+    } else {
+      timeoutId = window.setTimeout(() => setReady(true), delayMs);
+    }
+
+    return () => {
+      if (idleId !== undefined && typeof window.cancelIdleCallback === "function") {
+        window.cancelIdleCallback(idleId);
+      }
+      if (timeoutId !== undefined) window.clearTimeout(timeoutId);
+    };
+  }, [delayMs]);
+
+  return ready;
+}
 
 export interface HeroModelPlaceholderProps {
   className?: string;
@@ -45,6 +84,10 @@ export interface HeroModelPlaceholderProps {
  * 여전히 이를 잡아 `StaticBrandVisual`로 정상 대체하므로 화면이 깨지지는 않는다.
  */
 export function HeroModelPlaceholder({ className }: HeroModelPlaceholderProps) {
+  // 2000ms 안에 유휴 시점이 오지 않아도(예: 스크롤/입력이 계속되는 경우) 강제로
+  // 로드를 시작한다 — 3D 등장이 무기한 미뤄지지 않게 하는 안전장치.
+  const shouldLoad3D = useDeferredMount(2000);
+
   return (
     <div
       aria-hidden="true"
@@ -59,7 +102,7 @@ export function HeroModelPlaceholder({ className }: HeroModelPlaceholderProps) {
       )}
     >
       <ModelErrorBoundary fallback={<StaticBrandVisual />}>
-        <CanvasScene />
+        {shouldLoad3D ? <CanvasScene /> : <PlaceholderVisual />}
       </ModelErrorBoundary>
     </div>
   );

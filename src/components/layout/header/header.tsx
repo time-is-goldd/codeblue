@@ -66,13 +66,23 @@ export function Header({ cta }: HeaderProps) {
           {/* 원본은 1221×808(209KB)이었으나 실제 렌더 크기(h-9=36px)를 감안해
               363×240(34KB)로 재인코딩했다(2026-07-24 SEO 감사) — 36px 표시 기준
               6배 이상의 고밀도(retina) 디스플레이까지 선명도를 유지한다. `priority`가
-              걸린 유일한 이미지라 초기 로딩 비용에 직접 영향을 준다. */}
+              걸린 유일한 이미지라 초기 로딩 비용에 직접 영향을 준다.
+              `sizes`(PageSpeed Insights 모바일 성능 감사, 2026-08-19 실측 수정):
+              이 속성이 없으면 `next/image`는 "이 이미지가 반응형으로 뷰포트 폭까지
+              커질 수 있다"고 가정해 실제 CSS 렌더 크기(`h-9 w-auto` → 모든 화면 폭에서
+              고정 54×36px, 반응형 분기 없음)를 전혀 모른 채 가장 큰 `deviceSizes`
+              버킷(750px, 2배 고밀도 기준)을 요청했다 — 실제 필요한 픽셀의 10배 이상
+              큰 이미지를 내려받는 결과였다(실측: 15.8KiB 중 14.8KiB가 불필요). 이
+              로고는 모든 breakpoint에서 크기가 바뀌지 않으므로 고정값이면 충분하다 —
+              54.45px(=36×363/240)에 여유를 더해 55px로 지정한다. 화면에 보이는
+              크기·비율은 전혀 바뀌지 않는다(`className`은 그대로). */}
           <Image
             src="/images/brand/logo.png"
             alt="코드블루"
             width={363}
             height={240}
             priority
+            sizes="55px"
             className="h-9 w-auto"
           />
         </Link>

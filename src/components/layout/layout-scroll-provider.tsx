@@ -71,15 +71,47 @@ export function LayoutScrollProvider({ children }: { children: ReactNode }) {
 
   const listenersRef = useRef(new Set<ProgressListener>());
   const lastScrollYRef = useRef(0);
+  /** `measureBoundary`가 채우는 캐시 — PageSpeed Insights 모바일 성능 감사(2026-08-19)
+   *  에서 발견한 강제 리플로우 수정(아래 `measureBoundary` 주석 참고). */
+  const boundaryTopRef = useRef(Number.POSITIVE_INFINITY);
+
+  /**
+   * 이전에는 `processTick`(스크롤마다 rAF로 실행되는 고빈도 콜백) 안에서 매번
+   * `boundaryEl.getBoundingClientRect()`를 직접 호출했다 — 이 값(문서 기준 `#portfolio`의
+   * 절대 top 위치)은 실제로는 레이아웃이 바뀔 때(리사이즈, 폰트/이미지 로드로 인한
+   * 콘텐츠 높이 변화)만 달라지고 스크롤 자체로는 변하지 않는데도, 스크롤할 때마다 매번
+   * 다시 읽었다. `getBoundingClientRect()`는 호출 시점까지 밀린 레이아웃 변경을
+   * 강제로 동기 처리(forced reflow)시키는 대표적인 API라, 스크롤 중 계속 반복 호출되면
+   * 실측(PageSpeed Insights, 2026-08-19)에서 지적된 강제 리플로우의 원인이 된다 —
+   * `ScrollProgressBar`가 같은 프레임 안에서 DOM에 직접 쓰기(`bar.style.transform`)를
+   * 먼저 수행하는 것도 겹쳐 상황을 악화시킨다.
+   * 이 값을 마운트 시 1회 + resize 시 + (폰트/이미지가 늦게 자리 잡는 경우를 대비한)
+   * 짧은 지연 후 1회만 다시 측정해 ref에 캐시하고, `processTick`은 이 캐시만 읽는다 —
+   * 스크롤 중에는 더 이상 레이아웃을 강제로 재계산하지 않는다.
+   */
+  const measureBoundary = useCallback(() => {
+    if (typeof document === "undefined") return;
+    const boundaryEl = document.getElementById(HERO_BOUNDARY_ID);
+    boundaryTopRef.current = boundaryEl
+      ? boundaryEl.getBoundingClientRect().top + window.scrollY
+      : Number.POSITIVE_INFINITY;
+  }, []);
+
+  useEffect(() => {
+    measureBoundary();
+    window.addEventListener("resize", measureBoundary, { passive: true });
+    // 폰트 스왑/아래쪽 이미지 로드로 레이아웃이 뒤늦게 자리 잡는 경우를 대비한 1회 재측정.
+    const settleTimeoutId = window.setTimeout(measureBoundary, 1000);
+    return () => {
+      window.removeEventListener("resize", measureBoundary);
+      window.clearTimeout(settleTimeoutId);
+    };
+  }, [measureBoundary]);
 
   const processTick = useCallback((scrollY: number, progress: number, direction: 1 | -1) => {
     listenersRef.current.forEach((listener) => listener({ scrollY, progress, direction }));
 
-    const boundaryEl = document.getElementById(HERO_BOUNDARY_ID);
-    const boundaryTop = boundaryEl
-      ? boundaryEl.getBoundingClientRect().top + window.scrollY
-      : Number.POSITIVE_INFINITY;
-    const heroLimit = Math.max(boundaryTop - HEADER_HEIGHT, 0);
+    const heroLimit = Math.max(boundaryTopRef.current - HEADER_HEIGHT, 0);
     const nextInHero = scrollY < heroLimit;
 
     setIsInHeroZone((prev) => (prev === nextInHero ? prev : nextInHero));
