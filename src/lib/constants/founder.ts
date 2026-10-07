@@ -1,5 +1,5 @@
 /**
- * 대표자 소개 섹션(FounderSection) 사진 경로(2026-08-18: 실제 사진 반영).
+ * 대표자 소개 섹션(FounderSection) 사진 경로(2026-09-06: 새 대표 사진으로 교체).
  *
  * `public/images/founder/yeo-sanghyeon-profile.webp` — 원본 PNG(EXIF/위치정보 없음
  * 확인됨)를 sharp(Next.js가 이미지 최적화용으로 이미 설치해 둔 패키지, 새 의존성 추가

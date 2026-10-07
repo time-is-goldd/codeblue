@@ -119,10 +119,24 @@ export async function sendTelegramNotification(
       signal: controller.signal,
     });
 
-    if (!response.ok) {
-      // 응답 본문(에러 설명 등)은 내부 토큰/Chat ID를 반향(echo)할 수 있어 로그에 남기지
-      // 않는다 — 상태 코드만 기록한다.
-      console.error(`[sendTelegramNotification] Telegram API 응답 실패: HTTP ${response.status}`);
+    // Telegram이 항상 HTTP 상태 코드로만 실패를 알리는 것은 아니다 — 응답 본문의
+    // `ok` 필드가 최종 판정 기준이다. HTTP 상태만 보고 성공으로 간주하면 `ok: false`
+    // 응답(예: chat not found, bot was blocked by the user)을 성공으로 오판할 수 있다.
+    let body: { ok?: boolean; description?: string; error_code?: number } | undefined;
+    try {
+      body = await response.json();
+    } catch {
+      // 본문을 JSON으로 파싱할 수 없는 경우(빈 응답 등) — 아래에서 HTTP 상태만으로 판정한다.
+    }
+
+    if (!response.ok || !body?.ok) {
+      // 응답 본문의 `description`은 Telegram이 생성한 진단 메시지(예: "chat not found",
+      // "bot was blocked by the user")일 뿐 토큰/Chat ID를 반향(echo)하지 않으므로 안전하게
+      // 로그에 남길 수 있다 — 토큰 자체는 절대 포함하지 않는다.
+      const detail = body?.description ? `, ${body.description}` : "";
+      console.error(
+        `[sendTelegramNotification] Telegram API 응답 실패: HTTP ${response.status}${detail}`,
+      );
       return { success: false, reason: "http_error" };
     }
 

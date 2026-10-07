@@ -71,6 +71,13 @@ function mockFetchHttpError(status: number) {
   }) as typeof fetch;
 }
 
+function mockFetchOkStatusButApiFailure(description: string) {
+  globalThis.fetch = (async (url: string, init?: RequestInit) => {
+    fetchCalls.push({ url, init });
+    return new Response(JSON.stringify({ ok: false, error_code: 403, description }), { status: 200 });
+  }) as typeof fetch;
+}
+
 function mockFetchNetworkError() {
   globalThis.fetch = (async () => {
     throw new Error("network down");
@@ -124,6 +131,18 @@ describe("sendTelegramNotification", () => {
     // 로그에 상태 코드는 남기되, 봇 토큰 값 자체는 절대 남기지 않는다.
     const joined = consoleOutput.join("\n");
     assert.match(joined, /401/);
+    assert.doesNotMatch(joined, /test-bot-token/);
+  });
+
+  test("HTTP 상태는 200이어도 응답 본문의 ok가 false면 성공으로 처리하지 않는다", async () => {
+    setEnv("test-bot-token", "12345");
+    mockFetchOkStatusButApiFailure("bot was blocked by the user");
+
+    const result = await sendTelegramNotification();
+
+    assert.deepEqual(result, { success: false, reason: "http_error" });
+    const joined = consoleOutput.join("\n");
+    assert.match(joined, /bot was blocked by the user/);
     assert.doesNotMatch(joined, /test-bot-token/);
   });
 
