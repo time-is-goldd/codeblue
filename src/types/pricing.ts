@@ -14,6 +14,9 @@ export interface PricingTier {
   subtitle: string;
   priceLabel: string;
   pageScope: string;
+  /** "이런 분께" 한 줄 — 방문자가 자기에게 맞는 플랜을 스스로 찾게 돕는다(2026-10-07).
+   *  추천 플랜(Business)에서는 추천 이유 역할도 한다. 실제 제공 범위를 넘는 표현은 쓰지 않는다. */
+  bestFor: string;
   features: string[];
   order: number;
   isPublished: boolean;

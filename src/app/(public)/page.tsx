@@ -3,7 +3,6 @@ import { DifferenceSection } from "@/components/sections/difference";
 import { PortfolioSection } from "@/components/sections/portfolio/portfolio-section";
 import { PricingSection } from "@/components/sections/pricing/pricing-section";
 import { ReviewSection } from "@/components/sections/review";
-import { FounderSection } from "@/components/sections/founder/founder-section";
 import { FaqSection } from "@/components/sections/faq";
 import { ContactSection } from "@/components/sections/contact";
 import { getAllAssuranceChecklist } from "@/lib/repositories/difference.repository";
@@ -19,6 +18,11 @@ import { JsonLd } from "@/components/seo/json-ld";
 /**
  * 홈 섹션 순서(2026-08-15 개편): Hero → Portfolio → Review → Founder → Difference →
  * Pricing → Faq → Contact.
+ *
+ * 2026-10-06: 사용자 요청으로 Founder 섹션을 홈에서 임시로 뺐다(컴포넌트 파일
+ * `sections/founder/*`와 사진은 남겨 둠). 복구하려면 `FounderSection` import/렌더링과
+ * `nav.ts`의 "대표 소개"(`#founder`) 메뉴 항목을 되살리면 된다. 아래 설명의 Founder
+ * 관련 내용은 복구 시 참고용으로 남겨 둔다.
  *
  * 이전 구성에 있던 Urgency(손실회피 섹션), Services(서비스 카테고리 섹션), Difference 내부의
  * 템플릿 비교표(ComparisonTable)를 모두 삭제했다 — 관련 데이터(`urgency-section.tsx`,
@@ -84,7 +88,6 @@ export default async function HomePage() {
       <HeroSection ctaPrimary={heroCtaPrimary} ctaSecondary={heroCtaSecondary} />
       <PortfolioSection portfolios={featuredPortfolios} />
       <ReviewSection reviews={reviews} />
-      <FounderSection />
       <DifferenceSection checklist={assuranceChecklist} />
       <PricingSection
         tiers={pricingTiers}

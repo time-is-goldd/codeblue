@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, type ReactNode } from "react";
+import { createContext, useContext, useEffect, type ReactNode } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useReducedMotion } from "@/hooks/use-reduced-motion";
@@ -42,6 +42,26 @@ gsap.registerPlugin(ScrollTrigger);
  */
 export function AnimationProvider({ children }: { children: ReactNode }) {
   const prefersReducedMotion = useReducedMotion();
+
+  // 페이지 높이가 마운트 이후 바뀌면(2026-10-07, HeroGlyph가 측정 후 스크롤 구간을 늘림)
+  // ScrollTrigger의 시작/끝 위치가 어긋나므로 다시 계산한다. ScrollTrigger는 창 크기
+  // 변경만 스스로 감지하기 때문이다. 연속 변경은 한 번으로 묶는다.
+  useEffect(() => {
+    let timeoutId = 0;
+    let lastHeight = document.body.offsetHeight;
+    const observer = new ResizeObserver(() => {
+      const height = document.body.offsetHeight;
+      if (height === lastHeight) return;
+      lastHeight = height;
+      window.clearTimeout(timeoutId);
+      timeoutId = window.setTimeout(() => ScrollTrigger.refresh(), 150);
+    });
+    observer.observe(document.body);
+    return () => {
+      observer.disconnect();
+      window.clearTimeout(timeoutId);
+    };
+  }, []);
 
   return (
     <AnimationContext.Provider value={{ prefersReducedMotion }}>

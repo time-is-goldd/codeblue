@@ -6,7 +6,7 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { Section } from "@/components/common/section";
 import { Container } from "@/components/common/container";
 import { SectionHeading } from "@/components/common/section-heading";
-import { ReviewGrid } from "./review-grid";
+import { ReviewMarquee } from "./review-marquee";
 import { ReviewDiagnosisBanner } from "./review-diagnosis-banner";
 import { useReducedMotion } from "@/hooks/use-reduced-motion";
 import type { Review } from "@/types";
@@ -39,6 +39,9 @@ const EASE_OUT = "power2.out";
  * "REVIEWS"로 바꾸고 부제("코드블루와 함께 만든 결과를...")는 카드 3장이 이미 같은
  * 메시지를 전달하므로 삭제했다. `spacing="comfortable"`(PC 96px)로 다른 일반 섹션과
  * 여백을 통일한다(페이지 후반부 길이 축소 요청, `components/common/section.tsx` 참고).
+ *
+ * 2026-10-07: 카드 배치를 3열 그리드/모바일 스와이프에서 한 줄 가로 무한 흐름(`ReviewMarquee`)으로
+ * 바꿨다. 흐름이 화면 양 끝까지 이어지므로 섹션에 `overflow-x-clip`을 준다.
  */
 export function ReviewSection({ reviews }: ReviewSectionProps) {
   const headingRef = useRef<HTMLDivElement>(null);
@@ -72,16 +75,16 @@ export function ReviewSection({ reviews }: ReviewSectionProps) {
   }, [prefersReducedMotion]);
 
   return (
-    <Section id="review" spacing="comfortable">
+    <Section id="review" spacing="comfortable" className="overflow-x-clip">
       <Container className="flex flex-col items-center gap-16">
         <div ref={headingRef}>
           <SectionHeading align="center" eyebrow="REVIEWS" title="고객이 직접 남긴 제작 후기" />
         </div>
-        <ReviewGrid reviews={reviews} />
+        <ReviewMarquee reviews={reviews} />
 
         {/* 후기 아래 무료 진단 배너(2026-08-21 신설) — 새 Section을 열지 않고 이
             섹션의 기존 Container/여백을 그대로 재사용한다("컴팩트한 전환 배너"
-            요청사항). ReviewGrid와 동일한 gap-16으로 카드 그룹과 구분한다. */}
+            요청사항). 후기 흐름과 같은 gap-16으로 카드 그룹과 구분한다. */}
         <ReviewDiagnosisBanner />
       </Container>
     </Section>

@@ -4,7 +4,8 @@ import type { Review } from "@/types";
  * Review 섹션 하드코딩 데이터 — DEVELOPMENT_PLAN.md Phase 7A(Foundation).
  * Repository(review.repository.ts)만 이 파일을 import한다.
  *
- * 실제 고객 후기(2026-07-22 교체) — 직책 정보는 제공되지 않아 `position`을 비워둔다
+ * 실제 고객 후기(2026-07-22 교체, 2026-10-07 2건 추가 — 조○○ 피부과 후기는 포트폴리오의
+ * 클라라 피부과(자체 샘플)와 다른 실제 피부과 프로젝트다) — 직책 정보는 제공되지 않아 `position`을 비워둔다
  * (Review 타입/ReviewCard가 이미 선택 필드로 처리해 "회사"만 표시된다).
  */
 export const REVIEW_DATA: Review[] = [
@@ -46,5 +47,29 @@ export const REVIEW_DATA: Review[] = [
     isPublished: true,
     createdAt: "2026-07-22T00:00:00.000Z",
     updatedAt: "2026-07-22T00:00:00.000Z",
+  },
+  {
+    id: "review-004",
+    name: "이○○",
+    company: "파이썬 실행기",
+    rating: 5,
+    content: "친절하시고 저렴하게 제작해주셔서 감사합니다.",
+    avatar: { alt: "이○○ 프로필 사진" },
+    order: 3,
+    isPublished: true,
+    createdAt: "2026-10-07T00:00:00.000Z",
+    updatedAt: "2026-10-07T00:00:00.000Z",
+  },
+  {
+    id: "review-005",
+    name: "조○○",
+    company: "피부과 홈페이지",
+    rating: 5,
+    content: "잦고 예민한 요구사항도 모두 반영해주시네요 ㅎㅎ\n\n고생하셨습니다.",
+    avatar: { alt: "조○○ 프로필 사진" },
+    order: 4,
+    isPublished: true,
+    createdAt: "2026-10-07T00:00:00.000Z",
+    updatedAt: "2026-10-07T00:00:00.000Z",
   },
 ];

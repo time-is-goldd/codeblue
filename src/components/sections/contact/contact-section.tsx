@@ -7,6 +7,8 @@ import { SectionHeading } from "@/components/common/section-heading";
 import { Text } from "@/components/ui/typography/text";
 import { Button } from "@/components/ui/button";
 import { ContactForm } from "./contact-form";
+import { ContactLamp } from "./contact-lamp";
+import { RevealWords } from "@/components/common/reveal-words";
 import { submitContactAction } from "@/lib/actions/contact.actions";
 import { KAKAO_CHANNEL_URL } from "@/lib/constants/kakao";
 import { trackEvent } from "@/lib/analytics";
@@ -36,10 +38,19 @@ import { trackEvent } from "@/lib/analytics";
  */
 export function ContactSection() {
   return (
-    <Section id="contact" background="base" spacing="comfortable">
+    // relative isolate overflow-hidden: 상단 램프 연출(ContactLamp, 2026-10-07)을 섹션 안에 가두고
+    // 내용 뒤(-z-10)에 깔기 위함.
+    <Section id="contact" background="base" spacing="comfortable" className="relative isolate overflow-hidden">
+      <ContactLamp />
       <Container>
         <div className="mx-auto flex w-full max-w-[640px] flex-col gap-8">
-          <SectionHeading align="center" title="프로젝트 문의" description="가장 편한 방법으로 문의해 주세요." />
+          {/* 제목·설명은 램프(ContactLamp: 0.3초 뒤 0.8초 동안 켜짐)가 켜지는 흐름에 맞춰 단어별로
+              떠오른다 — 불이 켜지며 글씨가 드러나는 연출(2026-10-07). */}
+          <SectionHeading
+            align="center"
+            title={<RevealWords lines={["프로젝트 문의"]} delay={0.45} stagger={0.12} />}
+            description={<RevealWords lines={["가장 편한 방법으로 문의해 주세요."]} delay={0.8} stagger={0.05} />}
+          />
 
           <Button
             render={

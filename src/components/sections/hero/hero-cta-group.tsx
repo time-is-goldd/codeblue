@@ -7,6 +7,8 @@ import type { Cta } from "@/types";
 export interface HeroCtaGroupProps {
   ctaPrimary: Cta | null;
   ctaSecondary: Cta | null;
+  /** "onBlue": 블루 배경 위(HeroGlyph의 "O" 안 화면)에서 묻히지 않도록 흰색 주 버튼/반투명 보조 버튼으로 바꾼다. */
+  tone?: "default" | "onBlue";
 }
 
 const HERO_CTA_LOCATION = "hero";
@@ -31,7 +33,8 @@ const HERO_CTA_LOCATION = "hero";
  * 기록하고, "실제 제작 사례 보기"(보조 CTA)는 상담/진단 어느 쪽도 아니므로 추적하지
  * 않는다("use client" 전환은 이 트래킹 호출 하나 때문이다).
  */
-export function HeroCtaGroup({ ctaPrimary, ctaSecondary }: HeroCtaGroupProps) {
+export function HeroCtaGroup({ ctaPrimary, ctaSecondary, tone = "default" }: HeroCtaGroupProps) {
+  const onBlue = tone === "onBlue";
   if (!ctaPrimary && !ctaSecondary) return null;
 
   function handlePrimaryClick() {
@@ -41,12 +44,21 @@ export function HeroCtaGroup({ ctaPrimary, ctaSecondary }: HeroCtaGroupProps) {
   return (
     <div className="flex flex-wrap items-center justify-center gap-3">
       {ctaPrimary && (
-        <CtaLinkButton href={ctaPrimary.buttonHref} variant="cta" size="lg" onNavigate={handlePrimaryClick}>
+        <CtaLinkButton href={ctaPrimary.buttonHref} variant="cta"
+          size="lg"
+          onNavigate={handlePrimaryClick}
+          className={onBlue ? "bg-white text-[#0d2a66] shadow-lg hover:bg-white/90" : undefined}
+        >
           {ctaPrimary.buttonLabel}
         </CtaLinkButton>
       )}
       {ctaSecondary && (
-        <CtaLinkButton href={ctaSecondary.buttonHref} variant="secondary" size="lg">
+        <CtaLinkButton
+          href={ctaSecondary.buttonHref}
+          variant="secondary"
+          size="lg"
+          className={onBlue ? "border-white/40 bg-white/10 text-white hover:bg-white/20" : undefined}
+        >
           {ctaSecondary.buttonLabel}
         </CtaLinkButton>
       )}

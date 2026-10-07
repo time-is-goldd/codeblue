@@ -31,7 +31,18 @@ export function SectionHeading({
   titleClassName,
 }: SectionHeadingProps) {
   return (
-    <div className={cn("flex flex-col gap-3", align === "center" && "items-center text-center", className)}>
+    <div
+      className={cn("relative isolate flex flex-col gap-3", align === "center" && "items-center text-center", className)}
+    >
+      {/* 블루 무드 연결(2026-10-06): Hero "O" 안의 블루가 사이트 전체에 이어지도록 모든 섹션
+          제목 뒤에 아주 약한 블루 빛을 깐다. 제목 영역 폭 안에서만 퍼져 가로 스크롤을 만들지 않는다. */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-x-0 -inset-y-16 -z-10"
+        style={{
+          background: `radial-gradient(ellipse 55% 50% at ${align === "center" ? "50%" : "20%"} 50%, rgba(47,111,237,.13), transparent 70%)`,
+        }}
+      />
       {eyebrow && <Eyebrow>{eyebrow}</Eyebrow>}
       <Heading size="h2" className={titleClassName}>
         {title}

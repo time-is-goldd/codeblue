@@ -6,9 +6,8 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { Section } from "@/components/common/section";
 import { Container } from "@/components/common/container";
 import { SectionHeading } from "@/components/common/section-heading";
-import { PortfolioCard } from "./portfolio-card";
+import { PortfolioCarousel } from "./portfolio-carousel";
 import { useReducedMotion } from "@/hooks/use-reduced-motion";
-import { cn } from "@/lib/utils";
 import type { Portfolio } from "@/types";
 
 export interface PortfolioSectionProps {
@@ -32,8 +31,8 @@ const EASE_OUT = "power2.out";
  * 2연속 base를 피하려고 base→elevated로 바꿨다(이전엔 Services 바로 다음이라 base였다).
  *
  * UI Polish(2026-07-23): 카드가 2열 Grid에서 1열 전체 폭으로 바뀌며 이 컴포넌트는 더
- * 이상 컬럼 그리드가 필요 없다 — 세로로 쌓이는 단순 flex 스택이면 충분하다(카드 내부의
- * 좌우 분할은 PortfolioCard 자신이 담당한다).
+ * 이상 컬럼 그리드가 필요 없다(카드 내부의 좌우 분할은 PortfolioCard 자신이 담당한다).
+ * 2026-10-07부터 카드 목록은 모바일·PC 공통 가로 캐러셀(`PortfolioCarousel`)이다.
  */
 export function PortfolioSection({ portfolios }: PortfolioSectionProps) {
   const headingRef = useRef<HTMLDivElement>(null);
@@ -65,34 +64,26 @@ export function PortfolioSection({ portfolios }: PortfolioSectionProps) {
   }, [prefersReducedMotion]);
 
   return (
-    <Section id="portfolio" background="elevated">
+    <Section id="portfolio" background="elevated" className="relative isolate overflow-x-clip">
+      {/* Hero 무드 연결(2026-10-06): Hero "O" 안의 블루가 이 섹션 위쪽에 빛으로 남아 이어지게
+          하는 장식 글로우. Hero 하단이 이 글로우의 맨 위 색(rgb(21,33,55))으로 끝나므로 경계가 보이지 않는다 —
+          가로로 균일해야 이음매가 안 보여 radial이 아닌 linear를 쓴다. 색을 바꾸면 hero-glyph.tsx도 함께 맞춘다. */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-[560px]"
+        style={{
+          background:
+            "linear-gradient(to bottom, rgba(47,111,237,.16) 0%, rgba(47,111,237,.05) 50%, transparent 100%)",
+        }}
+      />
       <Container className="flex flex-col items-center gap-16">
         <div ref={headingRef} className="w-full">
           <SectionHeading align="center" eyebrow="Portfolio" title="실제로 이렇게 만들어드립니다" />
         </div>
 
-        {/* 모바일 가로 스크롤(2026-08-20): 카드가 2개 이상이면 overflow-x-auto +
-            snap-x snap-mandatory로 좌우 스와이프 캐러셀이 된다. 카드 1개뿐이면(스크롤할
-            대상이 없음) 이 처리를 건너뛰고 항상 세로 스택(전체 폭)으로 렌더링해 불필요한
-            빈 스크롤 영역이 생기지 않게 한다. md: 이상(PC/태블릿)은 카드 개수와 무관하게
-            항상 기존과 동일한 세로 flex 스택 — PortfolioCard 자신이 스크롤/스냅 관련
-            className을 md:에서 전부 원래 값으로 되돌린다. */}
-        <div
-          className={cn(
-            "flex w-full flex-col gap-8 lg:gap-10",
-            portfolios.length > 1 &&
-              "flex-row snap-x snap-mandatory gap-4 overflow-x-auto pb-2 [-webkit-overflow-scrolling:touch] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden md:flex-col md:snap-none md:gap-8 md:overflow-visible md:pb-0 lg:gap-10",
-          )}
-        >
-          {portfolios.map((portfolio, index) => (
-            <PortfolioCard
-              key={portfolio.id}
-              portfolio={portfolio}
-              index={index}
-              enableMobileCarousel={portfolios.length > 1}
-            />
-          ))}
-        </div>
+        {/* 가로 캐러셀(모바일·PC 공통, 2026-10-07) — 이전/다음 버튼, 위치 표시 포함.
+            카드 1개뿐이면 캐러셀 없이 전체 폭으로 렌더링한다(PortfolioCarousel 참고). */}
+        <PortfolioCarousel portfolios={portfolios} />
       </Container>
     </Section>
   );

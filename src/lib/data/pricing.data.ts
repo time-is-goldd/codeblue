@@ -23,6 +23,9 @@ import type { PricingAddOnItem, PricingTier } from "@/types";
  * 플랜 간 경계 명확화(2026-08-19): Business features에서 "관리자 페이지"를 뺐다 —
  * "관리자 기능 1종 또는 맞춤 기능 1종"이 Custom에만 있는 명확한 차별점이 되도록,
  * 관리자 기능은 Custom부터 제공되는 것으로 정리한다.
+ *
+ * "이런 분께"(`bestFor`, 2026-10-07): 가운데 추천을 근거 없는 상품 밀기로 보이지 않게, 세 플랜
+ * 모두에 어떤 경우에 맞는지 한 줄씩 붙였다. 추천 배지도 "회사 소개용 추천"으로 대상을 밝힌다.
  */
 export const PRICING_TIER_DATA: PricingTier[] = [
   {
@@ -32,6 +35,7 @@ export const PRICING_TIER_DATA: PricingTier[] = [
     subtitle: "빠르게 시작하는 원페이지 홈페이지",
     priceLabel: "30만원~",
     pageScope: "반응형 원페이지 홈페이지",
+    bestFor: "일단 빠르게 온라인에 자리 잡고 싶다면",
     features: [
       "최대 5개 섹션",
       "고객이 제공한 문구와 이미지를 바탕으로 구성",
@@ -53,6 +57,7 @@ export const PRICING_TIER_DATA: PricingTier[] = [
     subtitle: "회사와 서비스를 신뢰감 있게 소개하는 홈페이지",
     priceLabel: "60만원~",
     pageScope: "최대 5페이지 기업 홈페이지",
+    bestFor: "회사·서비스 소개와 문의 접수가 목적이라면 가장 무난한 구성",
     features: [
       "기본 정보 구조 및 콘텐츠 순서 기획",
       "문의폼 및 이메일 연결",
@@ -75,6 +80,8 @@ export const PRICING_TIER_DATA: PricingTier[] = [
     subtitle: "관리 기능 또는 맞춤 기능이 필요한 홈페이지",
     priceLabel: "150만원~",
     pageScope: "최대 8페이지",
+    // 예약·결제·회원가입은 추가 비용표에서 "별도 견적"이라 여기 넣지 않는다 — 실제 포함 범위만.
+    bestFor: "관리자 기능이나 맞춤 기능이 필요하다면",
     features: [
       "상세 정보 구조 및 콘텐츠 흐름 기획",
       "문의폼 및 이메일 연동",

@@ -102,9 +102,15 @@ export function LayoutScrollProvider({ children }: { children: ReactNode }) {
     window.addEventListener("resize", measureBoundary, { passive: true });
     // 폰트 스왑/아래쪽 이미지 로드로 레이아웃이 뒤늦게 자리 잡는 경우를 대비한 1회 재측정.
     const settleTimeoutId = window.setTimeout(measureBoundary, 1000);
+    // Hero 높이가 마운트 이후 바뀌는 경우(2026-10-06, HeroGlyph가 측정 후 스크롤 구간을
+    // 늘림)에도 경계를 다시 잰다 — 레이아웃이 실제로 바뀔 때만 호출되므로 스크롤 중
+    // 강제 리플로우 문제(위 주석)는 생기지 않는다.
+    const resizeObserver = new ResizeObserver(measureBoundary);
+    resizeObserver.observe(document.body);
     return () => {
       window.removeEventListener("resize", measureBoundary);
       window.clearTimeout(settleTimeoutId);
+      resizeObserver.disconnect();
     };
   }, [measureBoundary]);
 

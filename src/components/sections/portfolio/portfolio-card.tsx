@@ -3,7 +3,6 @@
 import { useLayoutEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import gsap from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { CheckIcon, ExternalLink, ImagesIcon } from "lucide-react";
 import { ResponsiveImage, DEFAULT_HOVER_SCALE } from "@/components/ui/responsive-image";
 import { ImageLightbox } from "@/components/ui/image-lightbox";
@@ -18,14 +17,15 @@ import type { Portfolio } from "@/types";
 export interface PortfolioCardProps {
   portfolio: Portfolio;
   index: number;
-  /** 모바일 가로 스크롤 캐러셀 적용 여부 — 부모(PortfolioSection)가 카드 개수(2개 이상)로
-   *  판단해 내려준다. false면 모바일에서도 항상 전체 폭 세로 스택 카드로 렌더링한다. */
-  enableMobileCarousel?: boolean;
+  /** 가로 캐러셀 안의 카드인지 — 부모(PortfolioCarousel)가 카드 개수(2개 이상)로 판단해
+   *  내려준다. false면 전체 폭 카드 한 장으로 렌더링한다. */
+  inCarousel?: boolean;
 }
 
-const STAGGER_DELAY = 0.15;
-const ENTRANCE_DURATION = 0.7;
-const EASE_OUT = "power2.out";
+/** 진입 시작 시 카드의 가로(Y축) 기울기(deg) — 카드마다 좌우 방향을 번갈아 준다. */
+const ENTRY_TILT_DEG = 28;
+/** 진입 시작 시 기울어진 쪽으로 밀려나 있는 거리(카드 폭 대비 %). */
+const ENTRY_SHIFT_PERCENT = 14;
 
 /**
  * 홈 Portfolio 미리보기 카드.
@@ -39,40 +39,56 @@ const EASE_OUT = "power2.out";
  *
  * 카드 배경/Hover는 사이트 공통 규칙(`lib/motion-presets.ts`)을 그대로 따른다.
  */
-export function PortfolioCard({ portfolio, index, enableMobileCarousel = false }: PortfolioCardProps) {
+export function PortfolioCard({ portfolio, index, inCarousel = false }: PortfolioCardProps) {
   const cardRef = useRef<HTMLDivElement>(null);
   const prefersReducedMotion = useReducedMotion();
 
+  /**
+   * 가로 3D 펼침 진입(2026-10-07): 카드가 화면 아래에서 들어오는 동안 스크롤 위치에 맞춰
+   * (scrub) 옆으로 기울어진 3D 상태 → 정면으로 돌아오며 펼쳐진다. 짝수 카드는 왼쪽,
+   * 홀수 카드는 오른쪽에서 돌아 들어온다. 스크롤을 가로채지 않고(일반 스크롤 그대로)
+   * 위치에 따라 각도만 바뀌므로, 위로 다시 올리면 반대로 접힌다. Hero의 "O 안으로
+   * 들어가는" 3D 무드를 이어가기 위한 연출이다.
+   *
+   * 사용자 요청(Hero와 동일)으로 OS 모션 감소 설정과 무관하게 항상 적용한다.
+   * 카드의 상세 정보·링크는 그대로이며 transform/opacity만 바뀐다.
+   */
   useLayoutEffect(() => {
     const cardEl = cardRef.current;
     if (!cardEl) return;
 
-    if (prefersReducedMotion) {
-      gsap.set(cardEl, { opacity: 1, y: 0 });
-      return;
-    }
-
-    gsap.set(cardEl, { opacity: 0, y: 40 });
-
+    const side = index % 2 === 0 ? -1 : 1;
     const ctx = gsap.context(() => {
-      ScrollTrigger.create({
-        trigger: cardEl,
-        start: "top 85%",
-        once: true,
-        onEnter: () => {
-          gsap.to(cardEl, {
-            opacity: 1,
-            y: 0,
-            duration: ENTRANCE_DURATION,
-            ease: EASE_OUT,
-            delay: index * STAGGER_DELAY,
-          });
+      gsap.fromTo(
+        cardEl,
+        {
+          rotateY: side * -ENTRY_TILT_DEG,
+          rotateX: 6,
+          xPercent: side * ENTRY_SHIFT_PERCENT,
+          scale: 0.9,
+          opacity: 0.25,
+          transformPerspective: 1400,
+          transformOrigin: side < 0 ? "left center" : "right center",
         },
-      });
+        {
+          rotateY: 0,
+          rotateX: 0,
+          xPercent: 0,
+          scale: 1,
+          opacity: 1,
+          ease: "power2.out",
+          scrollTrigger: {
+            trigger: cardEl,
+            start: "top bottom",
+            end: "center 62%",
+            scrub: 0.6,
+          },
+        },
+      );
     }, cardEl);
 
     return () => ctx.revert();
-  }, [prefersReducedMotion, index]);
+  }, [index]);
 
   const image = (
     <ResponsiveImage
@@ -86,11 +102,9 @@ export function PortfolioCard({ portfolio, index, enableMobileCarousel = false }
     />
   );
 
-  const imageBlock = portfolio.isSample ? (
-    <ImageLightbox src={portfolio.thumbnail.src} alt={portfolio.thumbnail.alt}>
-      {image}
-    </ImageLightbox>
-  ) : portfolio.liveUrl ? (
+  // 샘플이라도 실제로 들어가 볼 수 있는 주소(liveUrl)가 있으면 그 화면으로 연결하고(2026-10-07),
+  // 주소가 없는 샘플만 이미지 확대(라이트박스)로 보여준다.
+  const imageBlock = portfolio.liveUrl ? (
     <a
       href={portfolio.liveUrl}
       target="_blank"
@@ -99,6 +113,10 @@ export function PortfolioCard({ portfolio, index, enableMobileCarousel = false }
     >
       {image}
     </a>
+  ) : portfolio.isSample ? (
+    <ImageLightbox src={portfolio.thumbnail.src} alt={portfolio.thumbnail.alt}>
+      {image}
+    </ImageLightbox>
   ) : (
     image
   );
@@ -108,14 +126,11 @@ export function PortfolioCard({ portfolio, index, enableMobileCarousel = false }
       ref={cardRef}
       className={cn(
         "w-full",
-        // 모바일 캐러셀 카드 폭(2026-08-20): 컨테이너의 약 90%로 설정해 오른쪽에 다음
-        // 카드가 살짝 보이게 한다(가로 스크롤 구조임을 문구 없이도 알아볼 수 있게).
-        // shrink-0으로 flex가 폭을 줄이지 못하게 하고, snap-start + scroll-snap-stop:
-        // always로 한 번 스와이프하면 다음 카드에 정확히 정렬되며 여러 장을 건너뛰지
-        // 않는다. md: 이상(PC/태블릿)은 전부 원래 값(w-full, shrink, snap 없음)으로
-        // 되돌아간다.
-        enableMobileCarousel &&
-          "w-[90%] shrink-0 snap-start [scroll-snap-stop:always] md:w-full md:shrink md:snap-align-none",
+        // 캐러셀 카드 폭: 컨테이너의 약 90%(PC 86%)로 설정해 오른쪽에 다음 카드가 살짝
+        // 보이게 한다(가로 구조임을 문구 없이도 알아볼 수 있게). shrink-0으로 flex가 폭을
+        // 줄이지 못하게 하고, snap-start + scroll-snap-stop: always로 한 번 넘기면 다음
+        // 카드에 정확히 정렬되며 여러 장을 건너뛰지 않는다. PC도 가로 캐러셀(2026-10-07).
+        inCarousel && "w-[90%] shrink-0 snap-start [scroll-snap-stop:always] md:w-[86%]",
       )}
     >
       <motion.div
@@ -124,6 +139,10 @@ export function PortfolioCard({ portfolio, index, enableMobileCarousel = false }
         transition={CARD_HOVER_TRANSITION}
         className={cn(
           GLASS_CARD_CLASS,
+          // 성능(2026-10-07): 계속 움직이는 카드라 유리 효과(backdrop-blur)를 끈다 — 움직일 때마다
+          // 뒤 배경을 다시 흐리게 계산해 버벅임의 원인이 됐다. 배경이 단색이라 겉보기 차이는 없고,
+          // 배경 투명도는 흐림이 있을 때와 같게 맞춘다.
+          "backdrop-blur-none supports-backdrop-filter:bg-brand-bg-elevated/60",
           "grid grid-cols-1 gap-6 rounded-lg p-6 lg:grid-cols-[60fr_40fr] lg:items-center lg:gap-10 lg:p-8",
         )}
       >
@@ -181,7 +200,17 @@ export function PortfolioCard({ portfolio, index, enableMobileCarousel = false }
             </Text>
           )}
 
-          {portfolio.isSample ? (
+          {portfolio.isSample && portfolio.liveUrl ? (
+            <a
+              href={portfolio.liveUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex w-fit items-center gap-1.5 text-body-sm font-medium text-brand-accent hover:underline"
+            >
+              직접 둘러보기
+              <ExternalLink aria-hidden className="size-icon-sm" />
+            </a>
+          ) : portfolio.isSample ? (
             <ImageLightbox src={portfolio.thumbnail.src} alt={portfolio.thumbnail.alt} className="w-fit">
               <span className="inline-flex w-fit items-center gap-1.5 text-body-sm font-medium text-brand-accent hover:underline">
                 <ImagesIcon aria-hidden className="size-icon-sm" />

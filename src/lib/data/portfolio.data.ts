@@ -1,7 +1,7 @@
 import type { Portfolio } from "@/types";
 
 /**
- * 실제 제작 사례 2건 — UI는 이 배열을 직접 import하지 않고 반드시
+ * 제작 사례 — UI는 이 배열을 직접 import하지 않고 반드시
  * lib/repositories/portfolio.repository.ts를 경유한다.
  *
  * 카드 정보 구조 개편(2026-08-15): 단순 Before/After 서사 대신 프로젝트 구분/제작 목적/
@@ -9,6 +9,11 @@ import type { Portfolio } from "@/types";
  * % 등)는 여전히 만들지 않는다. `isSample: true`인 항목(도어락 프로젝트)은 실제 고객사가
  * 아닌 CodeBlue 자체 기획 샘플이며, 실제 사례(대화시스템)와 혼동되지 않도록 `client` 값도
  * 실제 회사명이 아닌 샘플임을 명시하는 문구로 채운다.
+ *
+ * 2026-10-07 추가: 이번엔(실제 운영 서비스), 클라라 피부과의원(업종별 샘플), 물고기 키우기
+ * (자체 제작 웹 게임, 샘플로 분류). 기능 목록은 각 사이트를 직접 열어 확인한 범위만 적었다.
+ * 샘플도 `liveUrl`이 있으면 카드에서 "직접 둘러보기"로 실제 화면에 들어가 볼 수 있다.
+ * 같은 날 도메인 연결 후 뚝딱(자체 제작 웹 도구, 샘플로 분류)도 추가했다.
  */
 export const PORTFOLIO_DATA: Portfolio[] = [
   {
@@ -28,7 +33,7 @@ export const PORTFOLIO_DATA: Portfolio[] = [
     features: ["관리자 페이지", "문의 이메일 연동", "반응형 제작", "기본 SEO", "배포"],
     isSample: false,
     isFeatured: true,
-    order: 1,
+    order: 2,
     isPublished: true,
     deletedAt: null,
     createdAt: "2026-07-23T00:00:00.000Z",
@@ -52,10 +57,142 @@ export const PORTFOLIO_DATA: Portfolio[] = [
     features: ["전화·카카오톡 문의 연결", "반응형 제작"],
     isSample: true,
     isFeatured: true,
-    order: 2,
+    order: 5,
     isPublished: true,
     deletedAt: null,
     createdAt: "2026-07-23T00:00:00.000Z",
     updatedAt: "2026-07-23T00:00:00.000Z",
+  },
+  {
+    id: "pf-003",
+    slug: "ibeonen-rotation-dating",
+    title: "이번엔 — 창원 컨셉 로테이션 소개팅",
+    client: "이번엔",
+    category: "startup",
+    thumbnail: {
+      src: "/images/portfolio/ibeonen-rotation-dating.webp",
+      alt: "이번엔 홈페이지 화면 — 컨셉이 있는 소개팅, 1기 참가자 모집",
+    },
+    gallery: [],
+    projectType: "서비스 랜딩·신청 사이트",
+    purpose: "회차별 컨셉 소개팅 참가자 모집 및 신청 접수",
+    scope: "랜딩 + 신청서·컨셉 요청 페이지",
+    features: ["회차별 참가 신청서", "회차별 남은 자리 표시", "컨셉 제안 요청", "반응형 제작"],
+    isSample: false,
+    isFeatured: true,
+    order: 3,
+    isPublished: true,
+    deletedAt: null,
+    createdAt: "2026-10-07T00:00:00.000Z",
+    updatedAt: "2026-10-07T00:00:00.000Z",
+    liveUrl: "https://2bunen.codeblue-official.co.kr/",
+  },
+  {
+    id: "pf-004",
+    slug: "clara-dermatology-sample",
+    title: "클라라 피부과의원 홈페이지",
+    client: "업종별 샘플 시안 (실제 고객사 아님)",
+    category: "hospital",
+    thumbnail: {
+      src: "/images/portfolio/clara-dermatology.webp",
+      alt: "클라라 피부과의원 홈페이지 메인 화면 — 업종별 샘플 시안",
+    },
+    gallery: [],
+    projectType: "업종별 샘플 시안",
+    purpose: "피부과 업종을 가정한 시술 안내·상담 예약 홈페이지 시안",
+    scope: "약 11페이지",
+    features: [
+      "시술별 상세 페이지",
+      "상담 예약 신청서",
+      "Before & After·이벤트 페이지",
+      "카카오톡·네이버 예약 퀵메뉴",
+      "반응형 제작",
+    ],
+    isSample: true,
+    isFeatured: true,
+    order: 1,
+    isPublished: true,
+    deletedAt: null,
+    createdAt: "2026-10-07T00:00:00.000Z",
+    updatedAt: "2026-10-07T00:00:00.000Z",
+    liveUrl: "https://derma.codeblue-official.co.kr/",
+  },
+  {
+    id: "pf-005",
+    slug: "fish-growing-web-game",
+    title: "물고기 키우기 — 웹 게임",
+    client: "CodeBlue 자체 제작 (실제 고객사 아님)",
+    category: "brand",
+    thumbnail: {
+      src: "/images/portfolio/fish-growing-game.webp",
+      alt: "물고기 키우기 웹 게임 시작 화면",
+    },
+    gallery: [],
+    projectType: "자체 제작 웹 게임",
+    purpose: "설치 없이 브라우저에서 바로 즐기는 캐주얼 게임 기획·개발",
+    scope: "웹앱 1종",
+    features: ["홈 화면 추가(앱처럼 설치)", "기록 자동 저장", "상점·미션·도감·업적", "모바일 터치 조작"],
+    isSample: true,
+    isFeatured: true,
+    order: 7,
+    isPublished: true,
+    deletedAt: null,
+    createdAt: "2026-10-07T00:00:00.000Z",
+    updatedAt: "2026-10-07T00:00:00.000Z",
+    liveUrl: "https://fish.codeblue-official.co.kr/",
+  },
+  {
+    id: "pf-006",
+    slug: "ttukttak-browser-file-tools",
+    title: "뚝딱 — 브라우저 파일 도구 모음",
+    client: "CodeBlue 자체 제작 (실제 고객사 아님)",
+    category: "brand",
+    thumbnail: {
+      src: "/images/portfolio/ttukttak-file-tools.webp",
+      alt: "뚝딱 파일 도구 모음 메인 화면 — 검색창과 자주 쓰는 도구",
+    },
+    gallery: [],
+    projectType: "자체 제작 웹 도구",
+    purpose: "파일을 서버에 올리지 않고 브라우저 안에서 바로 처리하는 무료 도구 모음",
+    scope: "도구 25종",
+    features: [
+      "PDF·이미지·영상 변환",
+      "엑셀·CSV·JSON 변환",
+      "연봉·퇴직금 등 생활 계산기",
+      "도구 검색",
+      "업로드 없는 브라우저 내 처리",
+    ],
+    isSample: true,
+    isFeatured: true,
+    order: 6,
+    isPublished: true,
+    deletedAt: null,
+    createdAt: "2026-10-07T00:00:00.000Z",
+    updatedAt: "2026-10-07T00:00:00.000Z",
+    liveUrl: "https://ttukttak.codeblue-official.co.kr/",
+  },
+  {
+    id: "pf-007",
+    slug: "coffee-python-runner",
+    title: "COFFEE — 커피 파이썬 실행기",
+    client: "개인 고객 (커피 파이썬 실행기 운영자)",
+    category: "startup",
+    thumbnail: {
+      src: "/images/portfolio/coffee-python-runner.webp",
+      alt: "커피 파이썬 실행기 화면 — 브라우저에서 Python 코드를 작성하고 실행하는 작업 공간",
+    },
+    gallery: [],
+    projectType: "웹 도구 제작",
+    purpose: "설치 없이 브라우저에서 바로 Python 코드를 실행하는 학습·실습 도구",
+    scope: "웹앱 1종",
+    features: ["브라우저 Python 실행", "코드 저장·불러오기", ".py·JSON 백업/복원", "HTML 미리보기", "반응형 제작"],
+    isSample: false,
+    isFeatured: true,
+    order: 4,
+    isPublished: true,
+    deletedAt: null,
+    createdAt: "2026-10-07T00:00:00.000Z",
+    updatedAt: "2026-10-07T00:00:00.000Z",
+    liveUrl: "https://coffee-python-runner.pages.dev/",
   },
 ];

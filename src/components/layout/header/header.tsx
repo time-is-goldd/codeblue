@@ -83,7 +83,9 @@ export function Header({ cta }: HeaderProps) {
             height={240}
             priority
             sizes="55px"
-            className="h-9 w-auto"
+            // Hero "O" 안의 블루 화면이 Header 뒤에 있을 때(`<html data-hero-blue>`, hero-glyph.tsx)만
+            // 로고를 흰색 실루엣으로 바꿔 블루 위에서도 보이게 한다.
+            className="h-9 w-auto transition-[filter] duration-base [html[data-hero-blue]_&]:brightness-0 [html[data-hero-blue]_&]:invert"
           />
         </Link>
 

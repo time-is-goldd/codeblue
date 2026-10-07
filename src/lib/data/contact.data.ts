@@ -1,5 +1,6 @@
 import type { ContactInfo } from "@/types";
 import { KAKAO_CHANNEL_URL } from "@/lib/constants/kakao";
+import { BUSINESS_INFO } from "@/lib/constants/business";
 
 /**
  * [Foundation 단계 임시 데이터] contact_info는 싱글턴으로 관리한다 (DATA_SCHEMA.md 6장).
@@ -16,7 +17,7 @@ import { KAKAO_CHANNEL_URL } from "@/lib/constants/kakao";
 export const CONTACT_INFO_DATA: ContactInfo = {
   id: "contact-info-singleton",
   companyName: "CodeBlue",
-  email: "yeo090110@gmail.com",
+  email: BUSINESS_INFO.email,
   kakaoChannelUrl: KAKAO_CHANNEL_URL,
   updatedAt: "2026-08-16T00:00:00.000Z",
 };

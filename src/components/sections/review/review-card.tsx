@@ -19,9 +19,13 @@ export interface ReviewCardProps {
   /** 카드 순서(0부터) — Desktop 좌→중→우 / Tablet·Mobile 위→아래 순차 등장의 지연 계산에
    *  사용한다(Trust EvidenceCard와 동일한 index 기반 stagger 원칙). */
   index: number;
-  /** 모바일 가로 스크롤 캐러셀 적용 여부 — 부모(ReviewGrid)가 후기 개수(2개 이상)로
-   *  판단해 내려준다. false면 모바일에서도 항상 전체 폭 카드로 렌더링한다. */
-  enableMobileCarousel?: boolean;
+  /** 바깥 div에 덧붙일 className(폭 지정 등) — 가로 흐름(ReviewMarquee)에서 카드 폭을 정한다. */
+  className?: string;
+  /** false면 스크롤 진입 등장 연출(카드 떠오름·별점 순차 등장) 없이 바로 보여준다 —
+   *  계속 흐르는 마키 안에서는 카드마다 따로 등장하면 어색해 끈다(2026-10-07). */
+  animateEntrance?: boolean;
+  /** 마키의 반복 복제본처럼 같은 후기가 여러 번 나올 때 스크린리더에서 숨긴다. */
+  hiddenFromScreenReader?: boolean;
 }
 
 const MAX_RATING = 5;
@@ -67,7 +71,13 @@ const EASE_OUT = "power2.out";
  * 렌더링한다(눈에 잘 띄지 않는 `tertiary`를 쓰지 않는다). 혜택을 받지 않은 후기는 이
  * 필드가 없으므로 아무것도 렌더링하지 않는다.
  */
-export function ReviewCard({ review, index, enableMobileCarousel = false }: ReviewCardProps) {
+export function ReviewCard({
+  review,
+  index,
+  className,
+  animateEntrance = true,
+  hiddenFromScreenReader = false,
+}: ReviewCardProps) {
   const cardRef = useRef<HTMLDivElement>(null);
   const starRefs = useRef<(SVGSVGElement | null)[]>([]);
   const prefersReducedMotion = useReducedMotion();
@@ -77,8 +87,8 @@ export function ReviewCard({ review, index, enableMobileCarousel = false }: Revi
     if (!cardEl) return;
     const starEls = starRefs.current.filter((el): el is SVGSVGElement => el !== null);
 
-    if (prefersReducedMotion) {
-      // 접근성(요청사항 ⑥): 애니메이션/ScrollTrigger를 생성하지 않고 최종 상태만 즉시 출력.
+    if (prefersReducedMotion || !animateEntrance) {
+      // 접근성(요청사항 ⑥)·마키 안의 카드: 애니메이션/ScrollTrigger를 생성하지 않고 최종 상태만 즉시 출력.
       gsap.set(cardEl, { opacity: 1, y: 0 });
       gsap.set(starEls, { opacity: 1, scale: 1 });
       return;
@@ -106,25 +116,22 @@ export function ReviewCard({ review, index, enableMobileCarousel = false }: Revi
     }, cardEl);
 
     return () => ctx.revert();
-  }, [prefersReducedMotion, index]);
+  }, [prefersReducedMotion, index, animateEntrance]);
 
   return (
-    <div
-      ref={cardRef}
-      className={cn(
-        "h-full",
-        // 모바일 캐러셀 카드 폭 — Portfolio 카드와 동일한 원칙(약 90%로 다음 카드가
-        // 살짝 보이게, snap-start + scroll-snap-stop:always로 스와이프 1회에 카드
-        // 1개씩 정렬). md: 이상은 전부 원래 값으로 되돌아간다.
-        enableMobileCarousel &&
-          "w-[90%] shrink-0 snap-start [scroll-snap-stop:always] md:w-full md:shrink md:snap-align-none",
-      )}
-    >
+    <div ref={cardRef} aria-hidden={hiddenFromScreenReader || undefined} className={cn("h-full", className)}>
       <motion.div
         variants={CARD_HOVER_VARIANTS}
         whileHover={prefersReducedMotion ? undefined : "hover"}
         transition={CARD_HOVER_TRANSITION}
-        className={cn(GLASS_CARD_CLASS, "flex h-full flex-col gap-6 rounded-lg p-6")}
+        className={cn(
+          GLASS_CARD_CLASS,
+          // 성능(2026-10-07): 계속 움직이는 카드라 유리 효과(backdrop-blur)를 끈다 — 움직일 때마다
+          // 뒤 배경을 다시 흐리게 계산해 버벅임의 원인이 됐다. 배경이 단색이라 겉보기 차이는 없고,
+          // 배경 투명도는 흐림이 있을 때와 같게 맞춘다.
+          "backdrop-blur-none supports-backdrop-filter:bg-brand-bg-elevated/60",
+          "flex h-full flex-col gap-6 rounded-lg p-6",
+        )}
       >
         <div className="flex items-center gap-3">
           <Avatar>

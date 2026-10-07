@@ -20,7 +20,7 @@ const EASE_OUT = "power2.out";
 
 /**
  * FAQ 문항 반응형 배치 — Desktop/Tablet/Mobile 모두 동일하게 세로 1열(Accordion Layout).
- * Trust StatisticsGrid/Review ReviewGrid와 동일하게 Phase 2의 `Grid` 공통 컴포넌트를
+ * Trust StatisticsGrid와 동일하게 Phase 2의 `Grid` 공통 컴포넌트를
  * 재사용한다 — `cols`를 모든 breakpoint에서 1로 고정해 "항상 세로 1열"을 명시적으로 표현한다.
  *
  * 모든 문항은 하나의 `Accordion` 아래에서 형제로 렌더링되어야 Base UI가 접근성 있는

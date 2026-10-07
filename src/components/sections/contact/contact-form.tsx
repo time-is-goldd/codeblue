@@ -496,6 +496,8 @@ export function ContactForm({ onSubmitAction }: ContactFormProps) {
       </FadeMessage>
 
       <Text size="sm" color="tertiary" className="text-center">
+        영업일 기준 24시간 내 연락드립니다.
+        <br />
         문의만 남겨도 현재 착수 가능일과 예상 제작 기간을 안내합니다.
       </Text>
     </form>

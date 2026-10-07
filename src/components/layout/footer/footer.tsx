@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Container } from "@/components/common/container";
 import { FOOTER_NAV_ITEMS } from "@/lib/constants/nav";
+import { BUSINESS_INFO } from "@/lib/constants/business";
 import { cn } from "@/lib/utils";
 import { NavLink } from "../nav-link";
 
@@ -38,6 +39,30 @@ export function Footer() {
             <br />
             문의를 만드는 홈페이지를 설계합니다.
           </p>
+
+          {/* 사업자 정보(2026-10-07) — 방문자가 "실체가 있는 업체인지" 확인할 수 있게 상호·대표자·
+              연락 이메일을 밝힌다. 값은 lib/constants/business.ts 한 곳에서 관리한다. */}
+          <dl className="mt-2 flex flex-col gap-1 text-caption text-brand-text-tertiary">
+            <div className="flex gap-2">
+              <dt>상호</dt>
+              <dd className="text-brand-text-secondary">{BUSINESS_INFO.tradeName}</dd>
+            </div>
+            <div className="flex gap-2">
+              <dt>대표</dt>
+              <dd className="text-brand-text-secondary">{BUSINESS_INFO.representative}</dd>
+            </div>
+            <div className="flex gap-2">
+              <dt>이메일</dt>
+              <dd>
+                <a
+                  href={`mailto:${BUSINESS_INFO.email}`}
+                  className={cn("text-brand-text-secondary hover:text-brand-text-primary", FOCUS_RING)}
+                >
+                  {BUSINESS_INFO.email}
+                </a>
+              </dd>
+            </div>
+          </dl>
         </div>
 
         {/* 우측: Quick Menu (Header와 동일한 NAV_ITEMS 재사용) */}

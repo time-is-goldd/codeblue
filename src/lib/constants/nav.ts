@@ -29,7 +29,8 @@ export interface NavItem {
 export const NAV_ITEMS: NavItem[] = [
   { label: "제작 사례", href: "#portfolio" },
   { label: "고객 후기", href: "#review" },
-  { label: "대표 소개", href: "#founder" },
+  // 2026-10-06: Founder 섹션을 홈에서 임시로 빼면서 메뉴도 숨김 — 복구 시 아래 줄을 되살린다.
+  // { label: "대표 소개", href: "#founder" },
   { label: "가격", href: "#pricing" },
 ];
 
