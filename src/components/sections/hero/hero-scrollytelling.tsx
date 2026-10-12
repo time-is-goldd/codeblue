@@ -115,15 +115,15 @@ export function HeroScrollytelling({ ctaPrimary, ctaSecondary }: HeroSectionProp
               size="display"
               className="text-balance break-keep text-[clamp(2.5rem,2.1rem+2vw,2.75rem)] leading-[1.24] sm:text-h1 sm:leading-[1.2] lg:text-display"
             >
-              검색한 고객은,
+              가장 빠른 웹사이트 제작,
               <br />
-              홈페이지에서 결정합니다
+              클릭 한 번으로 시작하세요
             </Heading>
 
             <Heading as="p" size="h2" className="text-balance text-[1.35rem] sm:text-h2 text-brand-text-secondary">
-              홈페이지가 없다면 만들고,
+              트렌디한 디자인부터 빠른 오픈까지,
               <br />
-              있어도 문의가 없다면 바꿉니다
+              압도적 속도의 웹 솔루션
             </Heading>
 
             <HeroModelPlaceholder />

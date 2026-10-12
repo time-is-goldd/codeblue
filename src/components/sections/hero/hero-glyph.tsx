@@ -137,14 +137,17 @@ export function HeroGlyph({ ctaPrimary, ctaSecondary }: HeroSectionProps) {
         style={{ top: HEADER_OFFSET }}
       >
         <Eyebrow>소상공인·기업 맞춤 홈페이지 제작</Eyebrow>
+        {/* 모바일 글자 크기(2026-10-12): 문구가 "가장 빠른 웹사이트 제작, / 클릭 한 번으로 시작하세요"로
+            길어져 고정 크기로는 375px에서 3줄로 넘쳤다 — 화면 폭에 비례(7.6vw, 26~40px)하게 해
+            320px 기기부터 항상 2줄에 들어가게 한다. sm(640px) 이상은 기존 text-h1 그대로. */}
         <Heading
           as="h1"
           size="display"
-          className="text-balance break-keep text-[clamp(2rem,1.6rem+2vw,2.5rem)] leading-[1.24] sm:text-h1 sm:leading-[1.2]"
+          className="text-balance break-keep text-[clamp(1.625rem,7.6vw,2.5rem)] leading-[1.24] sm:text-h1 sm:leading-[1.2]"
         >
-          검색한 고객은,
+          가장 빠른 웹사이트 제작,
           <br />
-          홈페이지에서 결정합니다
+          클릭 한 번으로 시작하세요
         </Heading>
       </div>
 
@@ -182,9 +185,9 @@ export function HeroGlyph({ ctaPrimary, ctaSecondary }: HeroSectionProps) {
         style={PORTAL_STYLE}
       >
         <div className="mx-auto flex max-w-3xl flex-col items-center gap-6 text-center sm:gap-8">
-          <Heading as="p" size="h2" className="text-balance break-keep text-[1.35rem] text-white sm:text-h1">
+          <Heading as="p" size="h2" className="text-balance break-keep text-[clamp(1.0625rem,5.4vw,1.35rem)] text-white sm:text-h1">
             <RevealWords
-              lines={["홈페이지가 없다면 만들고,", "있어도 문의가 없다면 바꿉니다"]}
+              lines={["트렌디한 디자인부터 빠른 오픈까지,", "압도적 속도의 웹 솔루션"]}
               play={messageVisible}
               stagger={0.07}
             />
