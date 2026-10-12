@@ -95,4 +95,13 @@ export const defaultMetadata: Metadata = {
       "naver-site-verification": "34e8168793d90bda4665fc2e8de08a150ee83149",
     },
   },
+  /**
+   * Google AdSense 사이트 소유권 확인(2026-10-12). 하위 도메인(*.codeblue-official.co.kr)에
+   * 광고를 넣으려면 AdSense "사이트"에 최상위 도메인만 등록·승인받으면 된다(2023-03부터 하위
+   * 도메인은 따로 등록하지 않고 최상위 도메인 승인으로 함께 광고가 나온다). 이 메타 태그는 그
+   * 최상위 도메인 소유권 확인용이며, 짝이 되는 판매자 선언은 `public/ads.txt`에 있다.
+   */
+  other: {
+    "google-adsense-account": "ca-pub-8911258662831291",
+  },
 };
