@@ -90,11 +90,15 @@ export function Footer() {
         <Container className="flex flex-col gap-3 py-6 text-caption text-brand-text-tertiary sm:flex-row sm:items-center sm:justify-between">
           <p>&copy; {year} CodeBlue. All rights reserved.</p>
           <nav aria-label="법적 고지" className="flex gap-4">
-            <Link href="/legal/privacy" className={cn(FOCUS_RING, "hover:text-brand-text-secondary")}>
-              Privacy Policy
+            {/* 개인정보 보호법상 "개인정보처리방침" 명칭과 눈에 띄는 표시(굵게)를 지킨다(2026-10-17). */}
+            <Link
+              href="/legal/privacy"
+              className={cn(FOCUS_RING, "font-semibold text-brand-text-secondary hover:text-brand-text-primary")}
+            >
+              개인정보처리방침
             </Link>
             <Link href="/legal/terms" className={cn(FOCUS_RING, "hover:text-brand-text-secondary")}>
-              Terms of Service
+              이용약관
             </Link>
           </nav>
         </Container>

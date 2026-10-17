@@ -32,6 +32,8 @@ export const NAV_ITEMS: NavItem[] = [
   // 2026-10-06: Founder 섹션을 홈에서 임시로 빼면서 메뉴도 숨김 — 복구 시 아래 줄을 되살린다.
   // { label: "대표 소개", href: "#founder" },
   { label: "가격", href: "#pricing" },
+  // 2026-10-17: 가이드 글 목록(별도 페이지). 대표 소개를 숨긴 자리라 Header 메뉴는 여전히 4개다.
+  { label: "가이드", href: "/guide" },
 ];
 
 /**

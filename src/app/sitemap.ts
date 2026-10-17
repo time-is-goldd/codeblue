@@ -1,5 +1,6 @@
 import type { MetadataRoute } from "next";
 import { siteConfig } from "@/lib/constants/site";
+import { getAllGuides } from "@/lib/repositories/guide.repository";
 
 /**
  * SEO_PLAN.md 6장 — Phase 10A(SEO Foundation)에서 점검 후 수정.
@@ -25,10 +26,21 @@ import { siteConfig } from "@/lib/constants/site";
  * 실제로 바꿀 때만 이 날짜도 함께 갱신한다. `/legal/*`의 날짜는 각 페이지의
  * `LAST_UPDATED`(page.tsx 내 시행일자 표기)와 반드시 일치시킨다.
  */
-const HOME_LAST_MODIFIED = new Date("2026-07-24");
-const LEGAL_LAST_MODIFIED = new Date("2026-07-24");
+const HOME_LAST_MODIFIED = new Date("2026-10-17");
+/** `legal/privacy/page.tsx`의 LAST_UPDATED와 일치 */
+const PRIVACY_LAST_MODIFIED = new Date("2026-10-17");
+/** `legal/terms/page.tsx`의 LAST_UPDATED와 일치 */
+const TERMS_LAST_MODIFIED = new Date("2026-07-24");
+const FAQ_LAST_MODIFIED = new Date("2026-10-17");
 
+/**
+ * 2026-10-17: `/faq`(전체 FAQ), `/guide`(가이드 목록), `/guide/[slug]`(가이드 글)를 추가했다.
+ * 가이드 글의 lastModified는 각 글 데이터의 `updatedAt`을 그대로 쓴다.
+ */
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  const guides = await getAllGuides();
+  const latestGuideUpdate = guides.reduce((latest, guide) => (guide.updatedAt > latest ? guide.updatedAt : latest), "2026-10-17");
+
   return [
     {
       url: siteConfig.url,
@@ -37,14 +49,32 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 1.0,
     },
     {
+      url: `${siteConfig.url}/guide`,
+      lastModified: new Date(latestGuideUpdate),
+      changeFrequency: "weekly",
+      priority: 0.8,
+    },
+    ...guides.map((guide) => ({
+      url: `${siteConfig.url}/guide/${guide.slug}`,
+      lastModified: new Date(guide.updatedAt),
+      changeFrequency: "monthly" as const,
+      priority: 0.7,
+    })),
+    {
+      url: `${siteConfig.url}/faq`,
+      lastModified: FAQ_LAST_MODIFIED,
+      changeFrequency: "monthly",
+      priority: 0.6,
+    },
+    {
       url: `${siteConfig.url}/legal/privacy`,
-      lastModified: LEGAL_LAST_MODIFIED,
+      lastModified: PRIVACY_LAST_MODIFIED,
       changeFrequency: "yearly",
       priority: 0.2,
     },
     {
       url: `${siteConfig.url}/legal/terms`,
-      lastModified: LEGAL_LAST_MODIFIED,
+      lastModified: TERMS_LAST_MODIFIED,
       changeFrequency: "yearly",
       priority: 0.2,
     },

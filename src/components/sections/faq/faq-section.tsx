@@ -6,6 +6,8 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { Section } from "@/components/common/section";
 import { Container } from "@/components/common/container";
 import { SectionHeading } from "@/components/common/section-heading";
+import Link from "next/link";
+import { ArrowRightIcon } from "lucide-react";
 import { FaqList } from "./faq-list";
 import { useReducedMotion } from "@/hooks/use-reduced-motion";
 import type { Faq } from "@/types";
@@ -78,6 +80,14 @@ export function FaqSection({ faqs }: FaqSectionProps) {
         <div ref={rootRef} className="flex w-full flex-col items-center gap-16">
           <SectionHeading align="center" eyebrow="FAQ" title="자주 묻는 질문" />
           <FaqList faqs={faqs} />
+          {/* 전체 FAQ(2026-10-17) — 홈에는 핵심 질문만 두고, 나머지는 /faq 전용 페이지에서 본다. */}
+          <Link
+            href="/faq"
+            className="inline-flex items-center gap-1.5 rounded-md text-body-sm font-medium text-brand-accent outline-none hover:underline focus-visible:ring-3 focus-visible:ring-ring/50"
+          >
+            자주 묻는 질문 전체 보기
+            <ArrowRightIcon aria-hidden className="size-icon-sm" />
+          </Link>
         </div>
       </Container>
     </Section>

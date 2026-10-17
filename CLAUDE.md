@@ -7,3 +7,5 @@
 - Hero 블루 구간에서는 `<html data-hero-blue>`로 Header 로고가 흰색이 됨(hero-glyph.tsx ↔ header.tsx). 스크롤 길이 `scrollLength`, 관성 `smoothing`(ms)은 hero-glyph.tsx에서 조절.
 - 사용자 선호: 사이트의 모든 효과는 OS 동작 줄이기·애니메이션 끄기 설정과 무관하게 항상 보여준다 — `hooks/use-reduced-motion.ts`가 항상 false를 돌려주고 globals.css의 전역 reduced-motion 규칙은 삭제함. 새 효과도 이 방침을 따른다. 스크롤을 가로채는 효과는 피한다. Portfolio 휠(WorksWheel) 효과는 작품이 5~6개 이상 모이면 적용하기로 보류.
 - 로컬 3000번 포트는 사용자의 다른 프로젝트가 쓰는 경우가 있어 코드블루 dev는 3002, prod 확인은 3001(`.claude/launch.json`).
+- AdSense(2026-10-17): 최상위 도메인 승인용. 가이드 글(`lib/data/guide.data*.ts`, `/guide`)·전체 FAQ(`/faq`, 홈은 `showOnHome`만)·개인정보처리방침(GA4·Clarity·AdSense 쿠키 고지)을 추가함. 외부 서비스·폼 항목이 바뀌면 개인정보처리방침과 sitemap 날짜를 함께 갱신. 가이드 글은 확인된 사실만 쓰고 성과 수치는 지어내지 않는다.
+- 대표 주소는 www(`site.ts`가 www 없는 운영 도메인을 www로 바꿈). 새 한글 문구를 넣으면 `npm run subset-font` 필수.

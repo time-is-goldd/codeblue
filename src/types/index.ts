@@ -6,3 +6,4 @@ export * from "./cta";
 export * from "./difference";
 export * from "./pricing";
 export * from "./portfolio-partner";
+export * from "./guide";

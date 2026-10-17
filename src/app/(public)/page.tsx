@@ -9,7 +9,7 @@ import { getAllAssuranceChecklist } from "@/lib/repositories/difference.reposito
 import { getFeaturedPortfolios } from "@/lib/repositories/portfolio.repository";
 import { getAllPricingTiers, getAllPricingAddOns } from "@/lib/repositories/pricing.repository";
 import { getAllReviews } from "@/lib/repositories/review.repository";
-import { getAllFaqs } from "@/lib/repositories/faq.repository";
+import { getHomeFaqs } from "@/lib/repositories/faq.repository";
 import { getCtaBySlot } from "@/lib/repositories/cta.repository";
 import { getPortfolioPartnerProgram } from "@/lib/repositories/portfolio-partner.repository";
 import { contactPageJsonLd, faqPageJsonLd, professionalServiceJsonLd } from "@/lib/seo/jsonld";
@@ -75,7 +75,7 @@ export default async function HomePage() {
   const pricingTiers = await getAllPricingTiers();
   const pricingAddOns = await getAllPricingAddOns();
   const reviews = await getAllReviews();
-  const faqs = await getAllFaqs();
+  const faqs = await getHomeFaqs();
   const portfolioPartnerProgram = await getPortfolioPartnerProgram();
   const professionalService = await professionalServiceJsonLd(reviews, pricingTiers);
   const contactPage = await contactPageJsonLd();

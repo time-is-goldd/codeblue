@@ -1,6 +1,7 @@
 import { siteConfig } from "@/lib/constants/site";
 import { getContactInfo } from "@/lib/repositories/contact.repository";
-import type { Faq, PricingTier, Review } from "@/types";
+import type { Faq, Guide, PricingTier, Review } from "@/types";
+import { BUSINESS_INFO } from "@/lib/constants/business";
 
 /**
  * 구조화 데이터(JSON-LD) 빌더 모음 — DEVELOPMENT_PLAN.md Phase 10A(SEO Foundation &
@@ -224,5 +225,30 @@ export function breadcrumbJsonLd(items: { name: string; url: string }[]) {
       name: item.name,
       item: item.url,
     })),
+  } as const;
+}
+
+/**
+ * 가이드 글 Article Schema(2026-10-17) — `/guide/[slug]`. 작성자는 실제 대표(사람)로, 게시자는
+ * 사이트(조직)로 표시한다. 날짜는 데이터의 `publishedAt`/`updatedAt`과 화면 표기를 일치시킨다.
+ */
+export function articleJsonLd(guide: Guide) {
+  const url = `${siteConfig.url}/guide/${guide.slug}`;
+  return {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    headline: guide.title,
+    description: guide.description,
+    datePublished: guide.publishedAt,
+    dateModified: guide.updatedAt,
+    inLanguage: "ko-KR",
+    mainEntityOfPage: url,
+    url,
+    author: { "@type": "Person", name: BUSINESS_INFO.representative },
+    publisher: {
+      "@type": "Organization",
+      name: siteConfig.name,
+      logo: { "@type": "ImageObject", url: `${siteConfig.url}/apple-touch-icon.png` },
+    },
   } as const;
 }

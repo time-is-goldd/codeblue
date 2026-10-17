@@ -20,7 +20,10 @@ export interface Faq {
   question: string;
   answer: string;
   order: number;
+  /** 사이트(`/faq` 전용 페이지)에 공개할지 */
   isPublished: boolean;
+  /** 홈 FAQ 섹션에도 보일지(2026-10-17) — 홈은 반론 제거에 직결되는 몇 개만, 전체는 `/faq`에서 본다. */
+  showOnHome: boolean;
   createdAt: string;
   updatedAt: string;
 }
