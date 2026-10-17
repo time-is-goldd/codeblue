@@ -1,6 +1,7 @@
 import type { MetadataRoute } from "next";
 import { siteConfig } from "@/lib/constants/site";
 import { getAllGuides } from "@/lib/repositories/guide.repository";
+import { getCaseStudySlugs } from "@/lib/repositories/case-study.repository";
 
 /**
  * SEO_PLAN.md 6장 — Phase 10A(SEO Foundation)에서 점검 후 수정.
@@ -32,6 +33,8 @@ const PRIVACY_LAST_MODIFIED = new Date("2026-10-17");
 /** `legal/terms/page.tsx`의 LAST_UPDATED와 일치 */
 const TERMS_LAST_MODIFIED = new Date("2026-07-24");
 const FAQ_LAST_MODIFIED = new Date("2026-10-17");
+const ABOUT_LAST_MODIFIED = new Date("2026-10-17");
+const PORTFOLIO_LAST_MODIFIED = new Date("2026-10-17");
 
 /**
  * 2026-10-17: `/faq`(전체 FAQ), `/guide`(가이드 목록), `/guide/[slug]`(가이드 글)를 추가했다.
@@ -39,6 +42,7 @@ const FAQ_LAST_MODIFIED = new Date("2026-10-17");
  */
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const guides = await getAllGuides();
+  const caseSlugs = await getCaseStudySlugs();
   const latestGuideUpdate = guides.reduce((latest, guide) => (guide.updatedAt > latest ? guide.updatedAt : latest), "2026-10-17");
 
   return [
@@ -48,6 +52,24 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: "weekly",
       priority: 1.0,
     },
+    {
+      url: `${siteConfig.url}/about`,
+      lastModified: ABOUT_LAST_MODIFIED,
+      changeFrequency: "monthly",
+      priority: 0.6,
+    },
+    {
+      url: `${siteConfig.url}/portfolio`,
+      lastModified: PORTFOLIO_LAST_MODIFIED,
+      changeFrequency: "monthly",
+      priority: 0.8,
+    },
+    ...caseSlugs.map((slug) => ({
+      url: `${siteConfig.url}/portfolio/${slug}`,
+      lastModified: PORTFOLIO_LAST_MODIFIED,
+      changeFrequency: "monthly" as const,
+      priority: 0.7,
+    })),
     {
       url: `${siteConfig.url}/guide`,
       lastModified: new Date(latestGuideUpdate),

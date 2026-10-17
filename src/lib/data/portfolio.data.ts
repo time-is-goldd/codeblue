@@ -13,7 +13,8 @@ import type { Portfolio } from "@/types";
  * 2026-10-07 추가: 이번엔(실제 운영 서비스), 클라라 피부과의원(업종별 샘플), 물고기 키우기
  * (자체 제작 웹 게임, 샘플로 분류). 기능 목록은 각 사이트를 직접 열어 확인한 범위만 적었다.
  * 샘플도 `liveUrl`이 있으면 카드에서 "직접 둘러보기"로 실제 화면에 들어가 볼 수 있다.
- * 같은 날 도메인 연결 후 뚝딱(자체 제작 웹 도구, 샘플로 분류)도 추가했다.
+ * 같은 날 도메인 연결 후 뚝딱(자체 제작 웹 도구, 샘플로 분류)도 추가했다. 2026-10-17: 사이트 이름이
+ * "싹뚝"으로 바뀌고 도구가 200여 종으로 늘어 카드·이미지·slug를 함께 갱신했다(주소는 그대로).
  */
 export const PORTFOLIO_DATA: Portfolio[] = [
   {
@@ -143,23 +144,23 @@ export const PORTFOLIO_DATA: Portfolio[] = [
   },
   {
     id: "pf-006",
-    slug: "ttukttak-browser-file-tools",
-    title: "뚝딱 — 브라우저 파일 도구 모음",
+    slug: "ssakttuk-browser-file-tools",
+    title: "싹뚝 — 브라우저 파일 도구 모음",
     client: "CodeBlue 자체 제작 (실제 고객사 아님)",
     category: "brand",
     thumbnail: {
-      src: "/images/portfolio/ttukttak-file-tools.webp",
-      alt: "뚝딱 파일 도구 모음 메인 화면 — 검색창과 자주 쓰는 도구",
+      src: "/images/portfolio/ssakttuk-file-tools.webp",
+      alt: "싹뚝 파일 도구 모음 메인 화면 — 검색창과 자주 쓰는 도구",
     },
     gallery: [],
     projectType: "자체 제작 웹 도구",
     purpose: "파일을 서버에 올리지 않고 브라우저 안에서 바로 처리하는 무료 도구 모음",
-    scope: "도구 25종",
+    scope: "도구 200여 종",
     features: [
-      "PDF·이미지·영상 변환",
+      "PDF·이미지·영상·오디오 편집과 변환",
+      "브라우저 안에서 도는 AI 배경 제거",
       "엑셀·CSV·JSON 변환",
-      "연봉·퇴직금 등 생활 계산기",
-      "도구 검색",
+      "연봉·퇴직금 등 계산기 50여 종",
       "업로드 없는 브라우저 내 처리",
     ],
     isSample: true,

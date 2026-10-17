@@ -1,9 +1,10 @@
 "use client";
 
 import { useLayoutEffect, useRef } from "react";
+import Link from "next/link";
 import { motion } from "framer-motion";
 import gsap from "gsap";
-import { CheckIcon, ExternalLink, ImagesIcon } from "lucide-react";
+import { CheckIcon, ExternalLink, ImagesIcon, ArrowRightIcon } from "lucide-react";
 import { ResponsiveImage, DEFAULT_HOVER_SCALE } from "@/components/ui/responsive-image";
 import { ImageLightbox } from "@/components/ui/image-lightbox";
 import { Badge } from "@/components/ui/badge";
@@ -20,6 +21,8 @@ export interface PortfolioCardProps {
   /** 가로 캐러셀 안의 카드인지 — 부모(PortfolioCarousel)가 카드 개수(2개 이상)로 판단해
    *  내려준다. false면 전체 폭 카드 한 장으로 렌더링한다. */
   inCarousel?: boolean;
+  /** 상세 사례 페이지 주소 — 있으면 '사례 자세히 보기' 링크를 함께 보여준다(2026-10-17). */
+  caseHref?: string;
 }
 
 /** 진입 시작 시 카드의 가로(Y축) 기울기(deg) — 카드마다 좌우 방향을 번갈아 준다. */
@@ -39,7 +42,7 @@ const ENTRY_SHIFT_PERCENT = 14;
  *
  * 카드 배경/Hover는 사이트 공통 규칙(`lib/motion-presets.ts`)을 그대로 따른다.
  */
-export function PortfolioCard({ portfolio, index, inCarousel = false }: PortfolioCardProps) {
+export function PortfolioCard({ portfolio, index, inCarousel = false, caseHref }: PortfolioCardProps) {
   const cardRef = useRef<HTMLDivElement>(null);
   const prefersReducedMotion = useReducedMotion();
 
@@ -200,36 +203,47 @@ export function PortfolioCard({ portfolio, index, inCarousel = false }: Portfoli
             </Text>
           )}
 
-          {portfolio.isSample && portfolio.liveUrl ? (
-            <a
-              href={portfolio.liveUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex w-fit items-center gap-1.5 text-body-sm font-medium text-brand-accent hover:underline"
-            >
-              직접 둘러보기
-              <ExternalLink aria-hidden className="size-icon-sm" />
-            </a>
-          ) : portfolio.isSample ? (
-            <ImageLightbox src={portfolio.thumbnail.src} alt={portfolio.thumbnail.alt} className="w-fit">
-              <span className="inline-flex w-fit items-center gap-1.5 text-body-sm font-medium text-brand-accent hover:underline">
-                <ImagesIcon aria-hidden className="size-icon-sm" />
-                샘플 시안 보기
-              </span>
-            </ImageLightbox>
-          ) : (
-            portfolio.liveUrl && (
+          <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
+            {caseHref && (
+              <Link
+                href={caseHref}
+                className="inline-flex w-fit items-center gap-1.5 text-body-sm font-medium text-brand-text-primary hover:text-brand-accent hover:underline"
+              >
+                사례 자세히 보기
+                <ArrowRightIcon aria-hidden className="size-icon-sm" />
+              </Link>
+            )}
+            {portfolio.isSample && portfolio.liveUrl ? (
               <a
                 href={portfolio.liveUrl}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex w-fit items-center gap-1.5 text-body-sm font-medium text-brand-accent hover:underline"
               >
-                실제 사이트 보기
+                직접 둘러보기
                 <ExternalLink aria-hidden className="size-icon-sm" />
               </a>
-            )
-          )}
+            ) : portfolio.isSample ? (
+              <ImageLightbox src={portfolio.thumbnail.src} alt={portfolio.thumbnail.alt} className="w-fit">
+                <span className="inline-flex w-fit items-center gap-1.5 text-body-sm font-medium text-brand-accent hover:underline">
+                  <ImagesIcon aria-hidden className="size-icon-sm" />
+                  샘플 시안 보기
+                </span>
+              </ImageLightbox>
+            ) : (
+              portfolio.liveUrl && (
+                <a
+                  href={portfolio.liveUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex w-fit items-center gap-1.5 text-body-sm font-medium text-brand-accent hover:underline"
+                >
+                  실제 사이트 보기
+                  <ExternalLink aria-hidden className="size-icon-sm" />
+                </a>
+              )
+            )}
+          </div>
         </div>
       </motion.div>
     </div>

@@ -9,3 +9,6 @@
 - 로컬 3000번 포트는 사용자의 다른 프로젝트가 쓰는 경우가 있어 코드블루 dev는 3002, prod 확인은 3001(`.claude/launch.json`).
 - AdSense(2026-10-17): 최상위 도메인 승인용. 가이드 글(`lib/data/guide.data*.ts`, `/guide`)·전체 FAQ(`/faq`, 홈은 `showOnHome`만)·개인정보처리방침(GA4·Clarity·AdSense 쿠키 고지)을 추가함. 외부 서비스·폼 항목이 바뀌면 개인정보처리방침과 sitemap 날짜를 함께 갱신. 가이드 글은 확인된 사실만 쓰고 성과 수치는 지어내지 않는다.
 - 대표 주소는 www(`site.ts`가 www 없는 운영 도메인을 www로 바꿈). 새 한글 문구를 넣으면 `npm run subset-font` 필수.
+- 소개 `/about`(대표 사진 없이), 제작 사례 목록 `/portfolio`와 상세 `/portfolio/[slug]`(본문은 `lib/data/case-study.data.ts`, 상세가 있는 사례만 카드에 '사례 자세히 보기'). 사례 본문에 고객 발언 인용·성과 수치는 넣지 않는다.
+- 구조화 데이터에서 자기 후기 별점(aggregateRating/review)은 Google 지침(self-serving reviews) 때문에 제거함 — 다시 넣지 않는다.
+- 뚝딱 서브도메인(ttukttak.)은 "싹뚝"으로 이름이 바뀜(도구 200여 종).

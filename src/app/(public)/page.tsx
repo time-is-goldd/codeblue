@@ -7,6 +7,7 @@ import { FaqSection } from "@/components/sections/faq";
 import { ContactSection } from "@/components/sections/contact";
 import { getAllAssuranceChecklist } from "@/lib/repositories/difference.repository";
 import { getFeaturedPortfolios } from "@/lib/repositories/portfolio.repository";
+import { getCaseStudySlugs } from "@/lib/repositories/case-study.repository";
 import { getAllPricingTiers, getAllPricingAddOns } from "@/lib/repositories/pricing.repository";
 import { getAllReviews } from "@/lib/repositories/review.repository";
 import { getHomeFaqs } from "@/lib/repositories/faq.repository";
@@ -72,12 +73,13 @@ export default async function HomePage() {
   const heroCtaSecondary = await getCtaBySlot("hero-secondary");
   const assuranceChecklist = await getAllAssuranceChecklist();
   const featuredPortfolios = await getFeaturedPortfolios();
+  const caseStudySlugs = await getCaseStudySlugs();
   const pricingTiers = await getAllPricingTiers();
   const pricingAddOns = await getAllPricingAddOns();
   const reviews = await getAllReviews();
   const faqs = await getHomeFaqs();
   const portfolioPartnerProgram = await getPortfolioPartnerProgram();
-  const professionalService = await professionalServiceJsonLd(reviews, pricingTiers);
+  const professionalService = await professionalServiceJsonLd(pricingTiers);
   const contactPage = await contactPageJsonLd();
 
   return (
@@ -86,7 +88,7 @@ export default async function HomePage() {
       <JsonLd data={contactPage} />
       <JsonLd data={faqPageJsonLd(faqs)} />
       <HeroSection ctaPrimary={heroCtaPrimary} ctaSecondary={heroCtaSecondary} />
-      <PortfolioSection portfolios={featuredPortfolios} />
+      <PortfolioSection portfolios={featuredPortfolios} caseStudySlugs={caseStudySlugs} />
       <ReviewSection reviews={reviews} />
       <DifferenceSection checklist={assuranceChecklist} />
       <PricingSection

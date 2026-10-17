@@ -42,6 +42,8 @@ export const NAV_ITEMS: NavItem[] = [
  */
 export const FOOTER_NAV_ITEMS: NavItem[] = [
   ...NAV_ITEMS,
+  // 2026-10-17: 코드블루 소개(별도 페이지) — Header 메뉴 4개 원칙 때문에 Footer에만 둔다.
+  { label: "소개", href: "/about" },
   { label: "FAQ", href: "#faq" },
   { label: "문의", href: "#contact" },
 ];

@@ -6,12 +6,16 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { Section } from "@/components/common/section";
 import { Container } from "@/components/common/container";
 import { SectionHeading } from "@/components/common/section-heading";
+import Link from "next/link";
+import { ArrowRightIcon } from "lucide-react";
 import { PortfolioCarousel } from "./portfolio-carousel";
 import { useReducedMotion } from "@/hooks/use-reduced-motion";
 import type { Portfolio } from "@/types";
 
 export interface PortfolioSectionProps {
   portfolios: Portfolio[];
+  /** 상세 사례 페이지(`/portfolio/[slug]`)가 있는 slug 목록 — 카드의 '사례 자세히 보기' 표시용 */
+  caseStudySlugs: string[];
 }
 
 const ENTRANCE_DURATION = 0.6;
@@ -34,7 +38,7 @@ const EASE_OUT = "power2.out";
  * 이상 컬럼 그리드가 필요 없다(카드 내부의 좌우 분할은 PortfolioCard 자신이 담당한다).
  * 2026-10-07부터 카드 목록은 모바일·PC 공통 가로 캐러셀(`PortfolioCarousel`)이다.
  */
-export function PortfolioSection({ portfolios }: PortfolioSectionProps) {
+export function PortfolioSection({ portfolios, caseStudySlugs }: PortfolioSectionProps) {
   const headingRef = useRef<HTMLDivElement>(null);
   const prefersReducedMotion = useReducedMotion();
 
@@ -83,7 +87,16 @@ export function PortfolioSection({ portfolios }: PortfolioSectionProps) {
 
         {/* 가로 캐러셀(모바일·PC 공통, 2026-10-07) — 이전/다음 버튼, 위치 표시 포함.
             카드 1개뿐이면 캐러셀 없이 전체 폭으로 렌더링한다(PortfolioCarousel 참고). */}
-        <PortfolioCarousel portfolios={portfolios} />
+        <PortfolioCarousel portfolios={portfolios} caseStudySlugs={caseStudySlugs} />
+
+        {/* 전체 사례 목록(2026-10-17) — 사례별 상세 페이지로 이어지는 입구. */}
+        <Link
+          href="/portfolio"
+          className="inline-flex items-center gap-1.5 rounded-md text-body-sm font-medium text-brand-accent outline-none hover:underline focus-visible:ring-3 focus-visible:ring-ring/50"
+        >
+          제작 사례 전체 보기
+          <ArrowRightIcon aria-hidden className="size-icon-sm" />
+        </Link>
       </Container>
     </Section>
   );

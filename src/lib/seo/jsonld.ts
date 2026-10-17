@@ -1,6 +1,6 @@
 import { siteConfig } from "@/lib/constants/site";
 import { getContactInfo } from "@/lib/repositories/contact.repository";
-import type { Faq, Guide, PricingTier, Review } from "@/types";
+import type { Faq, Guide, PricingTier } from "@/types";
 import { BUSINESS_INFO } from "@/lib/constants/business";
 
 /**
@@ -83,14 +83,15 @@ export function websiteJsonLd() {
  * 보장하지는 않지만, 생성형 엔진이 "후기가 있다"는 사실을 구조화된 형태로 인용할 수 있게
  * 한다는 점에서는 여전히 유효하다.
  *
+ * ⚠ 2026-10-17 제거: Google 구조화 데이터 지침은 LocalBusiness·Organization(ProfessionalService 포함)이
+ * 자기 사이트에 직접 게시한 후기로 별점을 표시하는 것(self-serving reviews)을 허용하지 않는다. 위반 시
+ * 구조화 데이터 수동 조치 대상이 될 수 있어 `aggregateRating`/`review`를 뺐다. 화면의 후기 섹션은 그대로다.
+ *
  * `hasOfferCatalog`(2026-07-24 GEO 강화)는 `offerCatalogFragment()`(아래)가 만드는
  * OfferCatalog 조각을 그대로 얹는다 — 가격 정보를 이 엔티티 소유로 명확히 연결한다.
  */
-export async function professionalServiceJsonLd(reviews: Review[] = [], pricingTiers: PricingTier[] = []) {
+export async function professionalServiceJsonLd(pricingTiers: PricingTier[] = []) {
   const contactInfo = await getContactInfo();
-  const reviewCount = reviews.length;
-  const averageRating =
-    reviewCount > 0 ? reviews.reduce((sum, review) => sum + review.rating, 0) / reviewCount : undefined;
 
   return {
     "@context": "https://schema.org",
@@ -106,25 +107,6 @@ export async function professionalServiceJsonLd(reviews: Review[] = [], pricingT
       : undefined,
     areaServed: "KR",
     hasOfferCatalog: pricingTiers.length > 0 ? offerCatalogFragment(pricingTiers) : undefined,
-    aggregateRating:
-      averageRating !== undefined
-        ? {
-            "@type": "AggregateRating",
-            ratingValue: Number(averageRating.toFixed(1)),
-            reviewCount,
-            bestRating: 5,
-            worstRating: 1,
-          }
-        : undefined,
-    review:
-      reviewCount > 0
-        ? reviews.map((review) => ({
-            "@type": "Review",
-            author: { "@type": "Person", name: review.name },
-            reviewRating: { "@type": "Rating", ratingValue: review.rating, bestRating: 5, worstRating: 1 },
-            reviewBody: review.content,
-          }))
-        : undefined,
   } as const;
 }
 

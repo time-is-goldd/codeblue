@@ -21,6 +21,8 @@ const FLOW_PERSPECTIVE_PX = 1600;
 
 export interface PortfolioCarouselProps {
   portfolios: Portfolio[];
+  /** 상세 사례 페이지가 있는 slug 목록 */
+  caseStudySlugs?: string[];
 }
 
 /**
@@ -39,7 +41,7 @@ export interface PortfolioCarouselProps {
  * 돌아오며 앞으로 나온다 — 넘기는 동안 카드가 회전하며 바뀌는 연출. 현재 위치(n / 전체)와 버튼
  * 비활성화는 스크롤 위치에서 계산한다. 카드가 1개뿐이면 캐러셀 없이 전체 폭으로 보여준다.
  */
-export function PortfolioCarousel({ portfolios }: PortfolioCarouselProps) {
+export function PortfolioCarousel({ portfolios, caseStudySlugs = [] }: PortfolioCarouselProps) {
   const trackRef = useRef<HTMLDivElement>(null);
   const [current, setCurrent] = useState(0);
   const [atStart, setAtStart] = useState(true);
@@ -203,6 +205,7 @@ export function PortfolioCarousel({ portfolios }: PortfolioCarouselProps) {
               portfolio={portfolio}
               index={index}
               inCarousel={isCarousel}
+              caseHref={caseStudySlugs.includes(portfolio.slug) ? `/portfolio/${portfolio.slug}` : undefined}
             />
           ))}
         </div>

@@ -1,6 +1,7 @@
 "use client";
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { usePathname } from "next/navigation";
 import { useLenis } from "@/components/providers/lenis-provider";
 import { useActiveSection } from "@/hooks/use-active-section";
 import { HEADER_HEIGHT } from "@/lib/constants/layout";
@@ -92,9 +93,10 @@ export function LayoutScrollProvider({ children }: { children: ReactNode }) {
   const measureBoundary = useCallback(() => {
     if (typeof document === "undefined") return;
     const boundaryEl = document.getElementById(HERO_BOUNDARY_ID);
-    boundaryTopRef.current = boundaryEl
-      ? boundaryEl.getBoundingClientRect().top + window.scrollY
-      : Number.POSITIVE_INFINITY;
+    // 경계 섹션이 없는 페이지(가이드·FAQ·소개·사례 상세·법률 페이지 등, 2026-10-17)는 Hero가 없으므로
+    // 처음부터 Hero 구간이 아닌 것으로 본다 — 예전에는 무한대로 두어 Header가 계속 투명한 채
+    // 본문 위에 겹쳐 보였다.
+    boundaryTopRef.current = boundaryEl ? boundaryEl.getBoundingClientRect().top + window.scrollY : 0;
   }, []);
 
   useEffect(() => {
@@ -131,6 +133,14 @@ export function LayoutScrollProvider({ children }: { children: ReactNode }) {
       return delta <= 0;
     });
   }, []);
+
+  // 페이지를 이동하면(예: 홈 → 가이드) 경계 섹션 유무가 바뀌므로 다시 재고, 스크롤이 일어나기 전에도
+  // Header 상태(투명/유리)를 새 페이지 기준으로 맞춘다(2026-10-17).
+  const pathname = usePathname();
+  useEffect(() => {
+    measureBoundary();
+    processTick(window.scrollY, 0, 1);
+  }, [pathname, measureBoundary, processTick]);
 
   const lenis = useLenis((lenisInstance) => {
     processTick(lenisInstance.scroll, lenisInstance.progress, (lenisInstance.direction || 1) as 1 | -1);
